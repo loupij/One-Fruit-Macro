@@ -1,215 +1,302 @@
-﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-; #Warn  ; Enable warnings to assist with detecting common errors.
+#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-; init toggle & status
-toggle := false
-status := "Configuration"
+; Fichier de configuration
+configFile := A_ScriptDir . "\config.ini"
 
-; créarion de l'ui & catégories
+; Lecture du fichier de configuration au démarrage
+IfNotExist, %configFile%
+{
+    IniWrite, 0, %configFile%, Categories, FightingStyle
+    IniWrite, 0, %configFile%, Categories, Sword
+    IniWrite, 0, %configFile%, Categories, Fruit
+    IniWrite, 0, %configFile%, Categories, Gun
+    IniWrite, 0, %configFile%, SkillsFightingStyle, W
+    IniWrite, 0, %configFile%, SkillsFightingStyle, X
+    IniWrite, 0, %configFile%, SkillsFightingStyle, C
+    IniWrite, 0, %configFile%, SkillsFightingStyle, V
+    IniWrite, 0, %configFile%, SkillsFightingStyle, B
+    IniWrite, 0, %configFile%, SkillsFightingStyle, F
+    IniWrite, 0, %configFile%, SkillsSword, W
+    IniWrite, 0, %configFile%, SkillsSword, X
+    IniWrite, 0, %configFile%, SkillsSword, C
+    IniWrite, 0, %configFile%, SkillsSword, V
+    IniWrite, 0, %configFile%, SkillsSword, B
+    IniWrite, 0, %configFile%, SkillsSword, F
+    IniWrite, 0, %configFile%, SkillsFruit, W
+    IniWrite, 0, %configFile%, SkillsFruit, X
+    IniWrite, 0, %configFile%, SkillsFruit, C
+    IniWrite, 0, %configFile%, SkillsFruit, V
+    IniWrite, 0, %configFile%, SkillsFruit, B
+    IniWrite, 0, %configFile%, SkillsFruit, F
+    IniWrite, 0, %configFile%, SkillsGun, W
+    IniWrite, 0, %configFile%, SkillsGun, X
+    IniWrite, 0, %configFile%, SkillsGun, C
+    IniWrite, 0, %configFile%, SkillsGun, V
+    IniWrite, 0, %configFile%, SkillsGun, B
+    IniWrite, 0, %configFile%, SkillsGun, F
+    IniWrite, 500, %configFile%, Settings, TimeInput
+}
+
+; Récupération des valeurs sauvegardées
+IniRead, FightingStyle, %configFile%, Categories, FightingStyle
+IniRead, Sword, %configFile%, Categories, Sword
+IniRead, Fruit, %configFile%, Categories, Fruit
+IniRead, Gun, %configFile%, Categories, Gun
+IniRead, FSkillW, %configFile%, SkillsFightingStyle, W
+IniRead, FSkillX, %configFile%, SkillsFightingStyle, X
+IniRead, FSkillC, %configFile%, SkillsFightingStyle, C
+IniRead, FSkillV, %configFile%, SkillsFightingStyle, V
+IniRead, FSkillB, %configFile%, SkillsFightingStyle, B
+IniRead, FSkillF, %configFile%, SkillsFightingStyle, F
+IniRead, SSkillW, %configFile%, SkillsSword, W
+IniRead, SSkillX, %configFile%, SkillsSword, X
+IniRead, SSkillC, %configFile%, SkillsSword, C
+IniRead, SSkillV, %configFile%, SkillsSword, V
+IniRead, SSkillB, %configFile%, SkillsSword, B
+IniRead, SSkillF, %configFile%, SkillsSword, F
+IniRead, FruitSkillW, %configFile%, SkillsFruit, W
+IniRead, FruitSkillX, %configFile%, SkillsFruit, X
+IniRead, FruitSkillC, %configFile%, SkillsFruit, C
+IniRead, FruitSkillV, %configFile%, SkillsFruit, V
+IniRead, FruitSkillB, %configFile%, SkillsFruit, B
+IniRead, FruitSkillF, %configFile%, SkillsFruit, F
+IniRead, GunSkillW, %configFile%, SkillsGun, W
+IniRead, GunSkillX, %configFile%, SkillsGun, X
+IniRead, GunSkillC, %configFile%, SkillsGun, C
+IniRead, GunSkillV, %configFile%, SkillsGun, V
+IniRead, GunSkillB, %configFile%, SkillsGun, B
+IniRead, GunSkillF, %configFile%, SkillsGun, F
+IniRead, TimeInput, %configFile%, Settings, TimeInput
+
+; Création de l'interface graphique
 Gui, Add, Text,, Choisissez les catégories et skills à activer :
-Gui, Add, Checkbox, vFightingStyle, Fighting Style
-Gui, Add, Checkbox, vSword, Sword
-Gui, Add, Checkbox, vFruit, Fruit
-Gui, Add, Checkbox, vGun, Gun
+Gui, Add, Checkbox, vFightingStyle Checked%FightingStyle%, Fighting Style
+Gui, Add, Checkbox, vSword Checked%Sword%, Sword
+Gui, Add, Checkbox, vFruit Checked%Fruit%, Fruit
+Gui, Add, Checkbox, vGun Checked%Gun%, Gun
 
 Gui, Add, Text,, Sélectionnez les skills pour chaque catégorie :
 
-; skills FS
 Gui, Add, Text,, Skills pour Fighting Style:
-Gui, Add, Checkbox, vFSkillW, W
-Gui, Add, Checkbox, vFSkillX, X
-Gui, Add, Checkbox, vFSkillC, C
-Gui, Add, Checkbox, vFSkillV, V
-Gui, Add, Checkbox, vFSkillB, B
-Gui, Add, Checkbox, vFSkillF, F
+Gui, Add, Checkbox, vFSkillW Checked%FSkillW%, W
+Gui, Add, Checkbox, vFSkillX Checked%FSkillX%, X
+Gui, Add, Checkbox, vFSkillC Checked%FSkillC%, C
+Gui, Add, Checkbox, vFSkillV Checked%FSkillV%, V
+Gui, Add, Checkbox, vFSkillB Checked%FSkillB%, B
+Gui, Add, Checkbox, vFSkillF Checked%FSkillF%, F
 
-; skills sword
 Gui, Add, Text,, Skills pour Sword:
-Gui, Add, Checkbox, vSSkillW, W
-Gui, Add, Checkbox, vSSkillX, X
-Gui, Add, Checkbox, vSSkillC, C
-Gui, Add, Checkbox, vSSkillV, V
-Gui, Add, Checkbox, vSSkillB, B
-Gui, Add, Checkbox, vSSkillF, F
+Gui, Add, Checkbox, vSSkillW Checked%SSkillW%, W
+Gui, Add, Checkbox, vSSkillX Checked%SSkillX%, X
+Gui, Add, Checkbox, vSSkillC Checked%SSkillC%, C
+Gui, Add, Checkbox, vSSkillV Checked%SSkillV%, V
+Gui, Add, Checkbox, vSSkillB Checked%SSkillB%, B
+Gui, Add, Checkbox, vSSkillF Checked%SSkillF%, F
 
-; skills fruit
 Gui, Add, Text,, Skills pour Fruit:
-Gui, Add, Checkbox, vFruitSkillW, W
-Gui, Add, Checkbox, vFruitSkillX, X
-Gui, Add, Checkbox, vFruitSkillC, C
-Gui, Add, Checkbox, vFruitSkillV, V
-Gui, Add, Checkbox, vFruitSkillB, B
-Gui, Add, Checkbox, vFruitSkillF, F
+Gui, Add, Checkbox, vFruitSkillW Checked%FruitSkillW%, W
+Gui, Add, Checkbox, vFruitSkillX Checked%FruitSkillX%, X
+Gui, Add, Checkbox, vFruitSkillC Checked%FruitSkillC%, C
+Gui, Add, Checkbox, vFruitSkillV Checked%FruitSkillV%, V
+Gui, Add, Checkbox, vFruitSkillB Checked%FruitSkillB%, B
+Gui, Add, Checkbox, vFruitSkillF Checked%FruitSkillF%, F
 
-; skills gun
 Gui, Add, Text,, Skills pour Gun:
-Gui, Add, Checkbox, vGunSkillW, W
-Gui, Add, Checkbox, vGunSkillX, X
-Gui, Add, Checkbox, vGunSkillC, C
-Gui, Add, Checkbox, vGunSkillV, V
-Gui, Add, Checkbox, vGunSkillB, B
-Gui, Add, Checkbox, vGunSkillF, F
+Gui, Add, Checkbox, vGunSkillW Checked%GunSkillW%, W
+Gui, Add, Checkbox, vGunSkillX Checked%GunSkillX%, X
+Gui, Add, Checkbox, vGunSkillC Checked%GunSkillC%, C
+Gui, Add, Checkbox, vGunSkillV Checked%GunSkillV%, V
+Gui, Add, Checkbox, vGunSkillB Checked%GunSkillB%, B
+Gui, Add, Checkbox, vGunSkillF Checked%GunSkillF%, F
 
-; champ entré pour intervalle
+; Champ d'entrée pour l'intervalle
 Gui, Add, Text,, Intervalle de temps entre les opérations (en ms) :
-Gui, Add, Edit, vTimeInput w100, 500  ; valeur par défaut
+Gui, Add, Edit, vTimeInput w100, %TimeInput%
 
-; bouton valider
+; Boutons de validation et contrôle
 Gui, Add, Button, gValidate, Valider
-
-; boutons controle
 Gui, Add, Button, gStart, F9 - Start
 Gui, Add, Button, gPause, F8 - Pause
 Gui, Add, Button, gStop, F7 - Stop
 
-; affichage du statut
-Gui, Add, Text, vStatusText, %status%
+Gui, Add, Text, vStatusText, Status: %status%
 
 Gui, Show,, Configuration des Catégories et Skills
 Return
 
-; validation des choix (bouton valider)
+; Validation des choix et sauvegarde dans config.ini
 Validate:
-    Gui, Submit, NoHide  ; enregistre les choix de l'utilisateur (sans fermer l'interface)
+    Gui, Submit, NoHide
+    ; Afficher les valeurs pour déboguer
+    MsgBox, FightingStyle: %FightingStyle%`nSword: %Sword%`nFruit: %Fruit%`nGun: %Gun%`n
+    MsgBox, FSkillW: %FSkillW%`nFSkillX: %FSkillX%`nFSkillC: %FSkillC%`nFSkillV: %FSkillV%`nFSkillB: %FSkillB%`nFSkillF: %FSkillF%`n
+    MsgBox, SSkillW: %SSkillW%`nSSkillX: %SSkillX%`nSSkillC: %SSkillC%`nSSkillV: %SSkillV%`nSSkillB: %SSkillB%`nSSkillF: %SSkillF%`n
+    MsgBox, FruitSkillW: %FruitSkillW%`nFruitSkillX: %FruitSkillX%`nFruitSkillC: %FruitSkillC%`nFruitSkillV: %FruitSkillV%`nFruitSkillB: %FruitSkillB%`nFruitSkillF: %FruitSkillF%`n
+    MsgBox, GunSkillW: %GunSkillW%`nGunSkillX: %GunSkillX%`nGunSkillC: %GunSkillC%`nGunSkillV: %GunSkillV%`nGunSkillB: %GunSkillB%`nGunSkillF: %GunSkillF%`n
 
-    ; vérif valeur intervalle
-    if (TimeInput == "")
-    {
-        MsgBox, Veuillez entrer une valeur pour l'intervalle de temps.
-        Return
-    }
-    
-    ; convertir l'entrée en nombre
-    intervalle := TimeInput + 0
-
-    ; stocker skills pour chaque catégorie
-    FSskills := []
-    if FSkillW
-        FSskills.Push("w")
-    if FSkillX
-        FSskills.Push("x")
-    if FSkillC
-        FSskills.Push("c")
-    if FSkillV
-        FSskills.Push("v")
-    if FSkillB
-        FSskills.Push("b")
-    if FSkillF
-        FSskills.Push("f")
-
-    Swordskills := []
-    if SSkillW
-        Swordskills.Push("w")
-    if SSkillX
-        Swordskills.Push("x")
-    if SSkillC
-        Swordskills.Push("c")
-    if SSkillV
-        Swordskills.Push("v")
-    if SSkillB
-        Swordskills.Push("b")
-    if SSkillF
-        Swordskills.Push("f")
-
-    FruitSkills := []
-    if FruitSkillW
-        FruitSkills.Push("w")
-    if FruitSkillX
-        FruitSkills.Push("x")
-    if FruitSkillC
-        FruitSkills.Push("c")
-    if FruitSkillV
-        FruitSkills.Push("v")
-    if FruitSkillB
-        FruitSkills.Push("b")
-    if FruitSkillF
-        FruitSkills.Push("f")
-
-    GunSkills := []
-    if GunSkillW
-        GunSkills.Push("w")
-    if GunSkillX
-        GunSkills.Push("x")
-    if GunSkillC
-        GunSkills.Push("c")
-    if GunSkillV
-        GunSkills.Push("v")
-    if GunSkillB
-        GunSkills.Push("b")
-    if GunSkillF
-        GunSkills.Push("f")
-
-    ; message config terminée
-    MsgBox, Configuration terminée.
+    ; Sauvegarde des choix dans le fichier de configuration
+    IniWrite, %FightingStyle%, %configFile%, Categories, FightingStyle
+    IniWrite, %Sword%, %configFile%, Categories, Sword
+    IniWrite, %Fruit%, %configFile%, Categories, Fruit
+    IniWrite, %Gun%, %configFile%, Categories, Gun
+    IniWrite, %FSkillW%, %configFile%, SkillsFightingStyle, W
+    IniWrite, %FSkillX%, %configFile%, SkillsFightingStyle, X
+    IniWrite, %FSkillC%, %configFile%, SkillsFightingStyle, C
+    IniWrite, %FSkillV%, %configFile%, SkillsFightingStyle, V
+    IniWrite, %FSkillB%, %configFile%, SkillsFightingStyle, B
+    IniWrite, %FSkillF%, %configFile%, SkillsFightingStyle, F
+    IniWrite, %SSkillW%, %configFile%, SkillsSword, W
+    IniWrite, %SSkillX%, %configFile%, SkillsSword, X
+    IniWrite, %SSkillC%, %configFile%, SkillsSword, C
+    IniWrite, %SSkillV%, %configFile%, SkillsSword, V
+    IniWrite, %SSkillB%, %configFile%, SkillsSword, B
+    IniWrite, %SSkillF%, %configFile%, SkillsSword, F
+    IniWrite, %FruitSkillW%, %configFile%, SkillsFruit, W
+    IniWrite, %FruitSkillX%, %configFile%, SkillsFruit, X
+    IniWrite, %FruitSkillC%, %configFile%, SkillsFruit, C
+    IniWrite, %FruitSkillV%, %configFile%, SkillsFruit, V
+    IniWrite, %FruitSkillB%, %configFile%, SkillsFruit, B
+    IniWrite, %FruitSkillF%, %configFile%, SkillsFruit, F
+    IniWrite, %GunSkillW%, %configFile%, SkillsGun, W
+    IniWrite, %GunSkillX%, %configFile%, SkillsGun, X
+    IniWrite, %GunSkillC%, %configFile%, SkillsGun, C
+    IniWrite, %GunSkillV%, %configFile%, SkillsGun, V
+    IniWrite, %GunSkillB%, %configFile%, SkillsGun, B
+    IniWrite, %GunSkillF%, %configFile%, SkillsGun, F
+    IniWrite, %TimeInput%, %configFile%, Settings, TimeInput
+    MsgBox, Configuration sauvegardée.
 Return
 
-; boucle principale
+
+; Boucle principale
 Start:
     toggle := true
     status := "Running"
-    GuiControl,, StatusText, %status% 
+    GuiControl,, StatusText, %status%
 
     While toggle {
         if FightingStyle {
             Send {1}
-            Sleep intervalle
-            for index, skill in FSskills {
-                Send {%skill%}
-                Sleep intervalle
-            }
+            Sleep, %TimeInput%
+            ; Envoyer les compétences pour Fighting Style
+            if (FSkillW) 
+                Send {w}
+                Sleep, %TimeInput%
+            if (FSkillX) 
+                Send {x}
+                Sleep, %TimeInput%
+            if (FSkillC) 
+                Send {c}
+                Sleep, %TimeInput%
+            if (FSkillV) 
+                Send {v}
+                Sleep, %TimeInput%
+            if (FSkillB) 
+                Send {b}
+                Sleep, %TimeInput%
+            if (FSkillF) 
+                Send {f}
+                Sleep, %TimeInput%
+            Sleep, %TimeInput%
         }
         if Sword {
             Send {3}
-            Sleep intervalle
-            for index, skill in Swordskills {
-                Send {%skill%}
-                Sleep intervalle
-            }
+            Sleep, %TimeInput%
+            ; Envoyer les compétences pour Sword
+            if (SSkillW) 
+                Send {w}
+                Sleep, %TimeInput%
+            if (SSkillX) 
+                Send {x}
+                Sleep, %TimeInput%
+            if (SSkillC) 
+                Send {c}
+                Sleep, %TimeInput%
+            if (SSkillV) 
+                Send {v}
+                Sleep, %TimeInput%
+            if (SSkillB) 
+                Send {b}
+                Sleep, %TimeInput%
+            if (SSkillF) 
+                Send {f}
+                Sleep, %TimeInput%
+            Sleep, %TimeInput%
         }
         if Fruit {
             Send {4}
-            Sleep intervalle
-            for index, skill in FruitSkills {
-                Send {%skill%}
-                Sleep intervalle
-            }
+            Sleep, %TimeInput%
+            ; Envoyer les compétences pour Fruit
+            if (FruitSkillW) 
+                Send {w}
+                Sleep, %TimeInput%
+            if (FruitSkillX) 
+                Send {x}
+                Sleep, %TimeInput%
+            if (FruitSkillC) 
+                Send {c}
+                Sleep, %TimeInput%
+            if (FruitSkillV) 
+                Send {v}
+                Sleep, %TimeInput%
+            if (FruitSkillB) 
+                Send {b}
+                Sleep, %TimeInput%
+            if (FruitSkillF) 
+                Send {f}
+                Sleep, %TimeInput%
+            Sleep, %TimeInput%
         }
         if Gun {
             Send {5}
-            Sleep intervalle
-            for index, skill in GunSkills {
-                Send {%skill%}
-                Sleep intervalle
-            }
+            Sleep, %TimeInput%
+            ; Envoyer les compétences pour Gun
+            if (GunSkillW) 
+                Send {w}
+                Sleep, %TimeInput%
+            if (GunSkillX) 
+                Send {x}
+                Sleep, %TimeInput%
+            if (GunSkillC) 
+                Send {c}
+                Sleep, %TimeInput%
+            if (GunSkillV) 
+                Send {v}
+                Sleep, %TimeInput%
+            if (GunSkillB) 
+                Send {b}
+                Sleep, %TimeInput%
+            if (GunSkillF) 
+                Send {f}
+                Sleep, %TimeInput%
+            Sleep, %TimeInput%
         }
     }
 Return
 
-; pause avec F8 (bouton)
+
+; Pause avec F8
 Pause:
     toggle := false
     status := "Paused"
-    GuiControl,, StatusText, %status% 
+    GuiControl,, StatusText, %status%
+    if A_IsPaused {
+        goto Start
+    }
 Return
 
-; stop avec F7 (bouton)
+; Stop avec F7
 Stop:
     ExitApp
 Return
 
-; config les touches (clavier)
-F8::
-	status := "Paused"
-	GuiControl,, StatusText, %status%	
-	Pause
-Return
-
+; Configurer les touches du clavier
 F7::ExitApp
-
+F8::
+    goto Pause
+Return
 F9::
-    status := "Starting"
-    GuiControl,, StatusText, %status%
     goto Start
 Return
