@@ -4,6 +4,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ; Fichier de configuration
 configFile := A_ScriptDir . "\config.ini"
+status = "Configuration"
 
 ; Lecture du fichier de configuration au démarrage
 IfNotExist, %configFile%
@@ -36,7 +37,7 @@ IfNotExist, %configFile%
     IniWrite, 0, %configFile%, SkillsGun, V
     IniWrite, 0, %configFile%, SkillsGun, B
     IniWrite, 0, %configFile%, SkillsGun, F
-    IniWrite, 500, %configFile%, Settings, TimeInput
+    IniWrite, 1000, %configFile%, Settings, TimeInput ; valeur par défaut de l'inverval = 1000
 }
 
 ; Récupération des valeurs sauvegardées
@@ -71,15 +72,15 @@ IniRead, GunSkillF, %configFile%, SkillsGun, F
 IniRead, TimeInput, %configFile%, Settings, TimeInput
 
 ; Création de l'interface graphique
-Gui, Add, Text,, Choisissez les catégories et skills à activer :
+Gui, Add, Text,, Select what categories and skills you want to enable :
 Gui, Add, Checkbox, vFightingStyle Checked%FightingStyle%, Fighting Style
 Gui, Add, Checkbox, vSword Checked%Sword%, Sword
 Gui, Add, Checkbox, vFruit Checked%Fruit%, Fruit
 Gui, Add, Checkbox, vGun Checked%Gun%, Gun
 
-Gui, Add, Text,, Sélectionnez les skills pour chaque catégorie :
+Gui, Add, Text,, Select skills for each category:
 
-Gui, Add, Text,, Skills pour Fighting Style:
+Gui, Add, Text,, Fighting Style skills :
 Gui, Add, Checkbox, vFSkillW Checked%FSkillW%, W
 Gui, Add, Checkbox, vFSkillX Checked%FSkillX%, X
 Gui, Add, Checkbox, vFSkillC Checked%FSkillC%, C
@@ -87,7 +88,7 @@ Gui, Add, Checkbox, vFSkillV Checked%FSkillV%, V
 Gui, Add, Checkbox, vFSkillB Checked%FSkillB%, B
 Gui, Add, Checkbox, vFSkillF Checked%FSkillF%, F
 
-Gui, Add, Text,, Skills pour Sword:
+Gui, Add, Text,, Sword skills:
 Gui, Add, Checkbox, vSSkillW Checked%SSkillW%, W
 Gui, Add, Checkbox, vSSkillX Checked%SSkillX%, X
 Gui, Add, Checkbox, vSSkillC Checked%SSkillC%, C
@@ -95,7 +96,7 @@ Gui, Add, Checkbox, vSSkillV Checked%SSkillV%, V
 Gui, Add, Checkbox, vSSkillB Checked%SSkillB%, B
 Gui, Add, Checkbox, vSSkillF Checked%SSkillF%, F
 
-Gui, Add, Text,, Skills pour Fruit:
+Gui, Add, Text,, Fruit skills:
 Gui, Add, Checkbox, vFruitSkillW Checked%FruitSkillW%, W
 Gui, Add, Checkbox, vFruitSkillX Checked%FruitSkillX%, X
 Gui, Add, Checkbox, vFruitSkillC Checked%FruitSkillC%, C
@@ -103,7 +104,7 @@ Gui, Add, Checkbox, vFruitSkillV Checked%FruitSkillV%, V
 Gui, Add, Checkbox, vFruitSkillB Checked%FruitSkillB%, B
 Gui, Add, Checkbox, vFruitSkillF Checked%FruitSkillF%, F
 
-Gui, Add, Text,, Skills pour Gun:
+Gui, Add, Text,, Gun skills:
 Gui, Add, Checkbox, vGunSkillW Checked%GunSkillW%, W
 Gui, Add, Checkbox, vGunSkillX Checked%GunSkillX%, X
 Gui, Add, Checkbox, vGunSkillC Checked%GunSkillC%, C
@@ -112,29 +113,31 @@ Gui, Add, Checkbox, vGunSkillB Checked%GunSkillB%, B
 Gui, Add, Checkbox, vGunSkillF Checked%GunSkillF%, F
 
 ; Champ d'entrée pour l'intervalle
-Gui, Add, Text,, Intervalle de temps entre les opérations (en ms) :
+Gui, Add, Text,, Time interval between operations (ms) :
 Gui, Add, Edit, vTimeInput w100, %TimeInput%
 
 ; Boutons de validation et contrôle
-Gui, Add, Button, gValidate, Valider
+Gui, Add, Button, gValidate, Validate
 Gui, Add, Button, gStart, F9 - Start
 Gui, Add, Button, gPause, F8 - Pause
 Gui, Add, Button, gStop, F7 - Stop
 
 Gui, Add, Text, vStatusText, Status: %status%
+status := "Status : Configuration"
+GuiControl,, StatusText, %status%
 
-Gui, Show,, Configuration des Catégories et Skills
+Gui, Show,, One Fruit Macro Configuration Panel
 Return
 
 ; Validation des choix et sauvegarde dans config.ini
 Validate:
     Gui, Submit, NoHide
-    ; Afficher les valeurs pour déboguer
-    MsgBox, FightingStyle: %FightingStyle%`nSword: %Sword%`nFruit: %Fruit%`nGun: %Gun%`n
-    MsgBox, FSkillW: %FSkillW%`nFSkillX: %FSkillX%`nFSkillC: %FSkillC%`nFSkillV: %FSkillV%`nFSkillB: %FSkillB%`nFSkillF: %FSkillF%`n
-    MsgBox, SSkillW: %SSkillW%`nSSkillX: %SSkillX%`nSSkillC: %SSkillC%`nSSkillV: %SSkillV%`nSSkillB: %SSkillB%`nSSkillF: %SSkillF%`n
-    MsgBox, FruitSkillW: %FruitSkillW%`nFruitSkillX: %FruitSkillX%`nFruitSkillC: %FruitSkillC%`nFruitSkillV: %FruitSkillV%`nFruitSkillB: %FruitSkillB%`nFruitSkillF: %FruitSkillF%`n
-    MsgBox, GunSkillW: %GunSkillW%`nGunSkillX: %GunSkillX%`nGunSkillC: %GunSkillC%`nGunSkillV: %GunSkillV%`nGunSkillB: %GunSkillB%`nGunSkillF: %GunSkillF%`n
+    ; Afficher les valeurs pour déboguer (used for programmation)
+    ; MsgBox, FightingStyle: %FightingStyle%`nSword: %Sword%`nFruit: %Fruit%`nGun: %Gun%`n
+    ; MsgBox, FSkillW: %FSkillW%`nFSkillX: %FSkillX%`nFSkillC: %FSkillC%`nFSkillV: %FSkillV%`nFSkillB: %FSkillB%`nFSkillF: %FSkillF%`n
+    ; MsgBox, SSkillW: %SSkillW%`nSSkillX: %SSkillX%`nSSkillC: %SSkillC%`nSSkillV: %SSkillV%`nSSkillB: %SSkillB%`nSSkillF: %SSkillF%`n
+    ; MsgBox, FruitSkillW: %FruitSkillW%`nFruitSkillX: %FruitSkillX%`nFruitSkillC: %FruitSkillC%`nFruitSkillV: %FruitSkillV%`nFruitSkillB: %FruitSkillB%`nFruitSkillF: %FruitSkillF%`n
+    ; MsgBox, GunSkillW: %GunSkillW%`nGunSkillX: %GunSkillX%`nGunSkillC: %GunSkillC%`nGunSkillV: %GunSkillV%`nGunSkillB: %GunSkillB%`nGunSkillF: %GunSkillF%`n
 
     ; Sauvegarde des choix dans le fichier de configuration
     IniWrite, %FightingStyle%, %configFile%, Categories, FightingStyle
@@ -166,15 +169,17 @@ Validate:
     IniWrite, %GunSkillB%, %configFile%, SkillsGun, B
     IniWrite, %GunSkillF%, %configFile%, SkillsGun, F
     IniWrite, %TimeInput%, %configFile%, Settings, TimeInput
-    MsgBox, Configuration sauvegardée.
+    MsgBox, Configuration done & saved.
 Return
 
 
 ; Boucle principale
 Start:
-    toggle := true
-    status := "Running"
+    status := "Status : Starting"
     GuiControl,, StatusText, %status%
+    Sleep 2000
+    status := "Status : Running"
+    toggle := true
 
     While toggle {
         if FightingStyle {
@@ -279,24 +284,32 @@ Return
 
 ; Pause avec F8
 Pause:
-    toggle := false
-    status := "Paused"
-    GuiControl,, StatusText, %status%
-    if A_IsPaused {
+    if (status = "Status : Paused") {
         goto Start
+    } else {
+        toggle := False
+        status := "Status : Paused"
+        GuiControl,, StatusText, %status%
     }
 Return
 
 ; Stop avec F7
 Stop:
+    status := "Status : Stopping."
+    GuiControl,, StatusText, %status%
+    Sleep 2000
     ExitApp
 Return
 
 ; Configurer les touches du clavier
-F7::ExitApp
+F7::
+    goto Stop
+Return
+
 F8::
     goto Pause
 Return
+
 F9::
     goto Start
 Return
