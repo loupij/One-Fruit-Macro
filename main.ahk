@@ -1,13 +1,15 @@
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+CoordMode, Pixel, Screen  ; S'assure que les coordonnées sont basées sur l'écran entier
 
 ; Fichier de configuration
 configFile := A_ScriptDir . "\config.ini"
-status = "Configuration"
+status := "Status : Configuration"
+PixelGetColor, color, 196, 840, RGB
 
 ; Lecture du fichier de configuration au démarrage
-IfNotExist, %configFile%
+IfNotExist, %configFile% ; création du fichier s'il n'existe pas
 {
     IniWrite, 0, %configFile%, Categories, FightingStyle
     IniWrite, 0, %configFile%, Categories, Sword
@@ -37,10 +39,12 @@ IfNotExist, %configFile%
     IniWrite, 0, %configFile%, SkillsGun, V
     IniWrite, 0, %configFile%, SkillsGun, B
     IniWrite, 0, %configFile%, SkillsGun, F
-    IniWrite, 1000, %configFile%, Settings, TimeInput ; valeur par défaut de l'inverval = 1000
+    ; IniWrite, 0, %configFile%, Settings, AutoObservationHaki
+    ; IniWrite, 0, %configFile%, Settings, AutoArmamentHaki
+    IniWrite, 0, %configFile%, Settings, AutoConquerorHaki
+    Iniwrite, 500, %configFile%, Settings, CategoriesTimeInput ; valeur par défaut de l'intervalle = 500
+    IniWrite, 1000, %configFile%, Settings, SkillTimeInput ; valeur par défaut de l'invervalle = 1000
 }
-
-; Récupération des valeurs sauvegardées
 IniRead, FightingStyle, %configFile%, Categories, FightingStyle
 IniRead, Sword, %configFile%, Categories, Sword
 IniRead, Fruit, %configFile%, Categories, Fruit
@@ -69,7 +73,11 @@ IniRead, GunSkillC, %configFile%, SkillsGun, C
 IniRead, GunSkillV, %configFile%, SkillsGun, V
 IniRead, GunSkillB, %configFile%, SkillsGun, B
 IniRead, GunSkillF, %configFile%, SkillsGun, F
-IniRead, TimeInput, %configFile%, Settings, TimeInput
+; IniRead, AutoObservationHaki, %configFile%, Settings, AutoObservationHaki
+; IniRead, AutoArmamentHaki, %configFile%, Settings, AutoArmamentHaki
+IniRead, AutoConquerorHaki, %configFile%, Settings, AutoConquerorHaki
+IniRead, CategoriesTimeInput, %configFile%, Settings, CategoriesTimeInput
+IniRead, SkillTimeInput, %configFile%, Settings, SkillTimeInput
 
 ; Création de l'interface graphique
 Gui, Add, Text,, Select what categories and skills you want to enable :
@@ -80,7 +88,7 @@ Gui, Add, Checkbox, vGun Checked%Gun%, Gun
 
 Gui, Add, Text,, Select skills for each category:
 
-Gui, Add, Text,, Fighting Style skills :
+Gui, Add, Text,, Fighting Style skills:
 Gui, Add, Checkbox, vFSkillW Checked%FSkillW%, W
 Gui, Add, Checkbox, vFSkillX Checked%FSkillX%, X
 Gui, Add, Checkbox, vFSkillC Checked%FSkillC%, C
@@ -112,18 +120,26 @@ Gui, Add, Checkbox, vGunSkillV Checked%GunSkillV%, V
 Gui, Add, Checkbox, vGunSkillB Checked%GunSkillB%, B
 Gui, Add, Checkbox, vGunSkillF Checked%GunSkillF%, F
 
-; Champ d'entrée pour l'intervalle
-Gui, Add, Text,, Time interval between operations (ms) :
-Gui, Add, Edit, vTimeInput w100, %TimeInput%
+; Champ d'entrée pour les intervalles
+Gui, Add, Text,, Time interval between categories change (ms) :
+Gui, Add, Edit, vTimeInput w100, %CategoriesTimeInput%
+Gui, Add, Text,, Time interval between skills (ms) :
+Gui, Add, Edit, vTimeInput2 w100, %SkillTimeInput%
+
+; haki
+Gui, Add, Text,, Auto Haki activation:
+; Gui, Add, Checkbox, vAutoObservationHaki Checked%AutoObservationHaki%, Auto Observation Haki
+; Gui, Add, Checkbox, vAutoArmamentHaki Checked%AutoArmamentHaki%, Auto Armamement Haki
+Gui, Add, CHeckbox, vAutoConquerorHaki Checked%AutoConquerorHaki%, Auto Conqueror Haki
 
 ; Boutons de validation et contrôle
 Gui, Add, Button, gValidate, Validate
-Gui, Add, Button, gStart, F9 - Start
-Gui, Add, Button, gPause, F8 - Pause
-Gui, Add, Button, gStop, F7 - Stop
+Gui, Add, Text,,
+Gui, Add, Button, gStart, F1 - Start
+Gui, Add, Button, gPause, F2 - Pause
+Gui, Add, Button, gStop, F3 - Stop
 
-Gui, Add, Text, vStatusText, Status: %status%
-status := "Status : Configuration"
+Gui, Add, Text, vStatusText, %status%
 GuiControl,, StatusText, %status%
 
 Gui, Show,, One Fruit Macro Configuration Panel
@@ -168,8 +184,12 @@ Validate:
     IniWrite, %GunSkillV%, %configFile%, SkillsGun, V
     IniWrite, %GunSkillB%, %configFile%, SkillsGun, B
     IniWrite, %GunSkillF%, %configFile%, SkillsGun, F
-    IniWrite, %TimeInput%, %configFile%, Settings, TimeInput
-    MsgBox, Configuration done & saved.
+    ; IniWrite, %AutoObservationHaki%, %configFile%, Settings, AutoObservationHaki
+    ; IniWrite, %AutoArmamentHaki%, %configFile%, Settings, AutoArmamentHaki
+    IniWrite, %AutoConquerorHaki%, %configFile%, Settings, AutoConquerorHaki 
+    Iniwrite, %CategoriesTimeInput%, %configFile%, Settings, CategoriesTimeInput
+    IniWrite, %SkillTimeInput%, %configFile%, Settings, SkillTimeInput
+    MsgBox, Settings have been successfully saved.
 Return
 
 
@@ -177,139 +197,178 @@ Return
 Start:
     status := "Status : Starting"
     GuiControl,, StatusText, %status%
-    Sleep 2000
+    Sleep 1000
     status := "Status : Running"
+    GuiControl,, StatusText, %status%
     toggle := true
 
     While toggle {
+        ; if AutoObservationHaki {
+        ;     if (color != 0x54FBFB) {
+        ;         Send {r}
+        ;         Sleep, %SkillTimeInput%
+        ;     }
+        ; }
+        ; if AutoArmamentHaki {
+        ;     Send {r}
+        ;     Sleep, 5000
+        ; }
+        if AutoConquerorHaki {
+            Send {h}
+            Sleep, %SkillTimeInput%
+        }
         if FightingStyle {
-            Send {1}
-            Sleep, %TimeInput%
+            Send {&}
+            Sleep, %SkillTimeInput%
             ; Envoyer les compétences pour Fighting Style
-            if (FSkillW) 
+            if (FSkillW) {
                 Send {w}
-                Sleep, %TimeInput%
-            if (FSkillX) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FSkillX) {
                 Send {x}
-                Sleep, %TimeInput%
-            if (FSkillC) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FSkillC) {
                 Send {c}
-                Sleep, %TimeInput%
-            if (FSkillV) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FSkillV) {
                 Send {v}
-                Sleep, %TimeInput%
-            if (FSkillB) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FSkillB) {
                 Send {b}
-                Sleep, %TimeInput%
-            if (FSkillF) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FSkillF) {
                 Send {f}
-                Sleep, %TimeInput%
-            Sleep, %TimeInput%
+                Sleep, %SkillTimeInput%
+            }
+            Sleep, %CategoriesTimeInput%
         }
         if Sword {
-            Send {3}
-            Sleep, %TimeInput%
+            Send {"}
+            Sleep, %SkillTimeInput%
             ; Envoyer les compétences pour Sword
-            if (SSkillW) 
+            if (SSkillW) {
                 Send {w}
-                Sleep, %TimeInput%
-            if (SSkillX) 
+                Sleep, %SkillTimeInput%
+            }
+            if (SSkillX) {
                 Send {x}
-                Sleep, %TimeInput%
-            if (SSkillC) 
+                Sleep, %SkillTimeInput%
+            }
+            if (SSkillC) {
                 Send {c}
-                Sleep, %TimeInput%
-            if (SSkillV) 
+                Sleep, %SkillTimeInput%
+            }
+            if (SSkillV) {
                 Send {v}
-                Sleep, %TimeInput%
-            if (SSkillB) 
+                Sleep, %SkillTimeInput%
+            }
+            if (SSkillB) {
                 Send {b}
-                Sleep, %TimeInput%
-            if (SSkillF) 
+                Sleep, %SkillTimeInput%
+            }
+            if (SSkillF) {
                 Send {f}
-                Sleep, %TimeInput%
-            Sleep, %TimeInput%
+                Sleep, %SkillTimeInput%
+            }
+            Sleep, %CategoriesTimeInput%
         }
         if Fruit {
-            Send {4}
-            Sleep, %TimeInput%
+            Send {'}
+            Sleep, %SkillTimeInput%
             ; Envoyer les compétences pour Fruit
-            if (FruitSkillW) 
+            if (FruitSkillW) {
                 Send {w}
-                Sleep, %TimeInput%
-            if (FruitSkillX) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FruitSkillX) {
                 Send {x}
-                Sleep, %TimeInput%
-            if (FruitSkillC) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FruitSkillC) {
                 Send {c}
-                Sleep, %TimeInput%
-            if (FruitSkillV) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FruitSkillV) {
                 Send {v}
-                Sleep, %TimeInput%
-            if (FruitSkillB) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FruitSkillB) {
                 Send {b}
-                Sleep, %TimeInput%
-            if (FruitSkillF) 
+                Sleep, %SkillTimeInput%
+            }
+            if (FruitSkillF) {
                 Send {f}
-                Sleep, %TimeInput%
-            Sleep, %TimeInput%
+                Sleep, %SkillTimeInput%
+            }
+            Sleep, %CategoriesTimeInput%
         }
         if Gun {
-            Send {5}
-            Sleep, %TimeInput%
+            Send {(}
+            Sleep, %SkillTimeInput%
             ; Envoyer les compétences pour Gun
-            if (GunSkillW) 
+            if (GunSkillW) {
                 Send {w}
-                Sleep, %TimeInput%
-            if (GunSkillX) 
+                Sleep, %SkillTimeInput%
+            }
+            if (GunSkillX) {
                 Send {x}
-                Sleep, %TimeInput%
-            if (GunSkillC) 
+                Sleep, %SkillTimeInput%
+            }
+            if (GunSkillC) {
                 Send {c}
-                Sleep, %TimeInput%
-            if (GunSkillV) 
+                Sleep, %SkillTimeInput%
+            }
+            if (GunSkillV) {
                 Send {v}
-                Sleep, %TimeInput%
-            if (GunSkillB) 
+                Sleep, %SkillTimeInput%
+            }
+            if (GunSkillB) {
                 Send {b}
-                Sleep, %TimeInput%
-            if (GunSkillF) 
+                Sleep, %SkillTimeInput%
+            }
+            if (GunSkillF) {
                 Send {f}
-                Sleep, %TimeInput%
-            Sleep, %TimeInput%
+                Sleep, %SkillTimeInput%
+            }
+            Sleep, %CategoriesTimeInput%
         }
     }
 Return
 
 
-; Pause avec F8
+; Pause avec F2
 Pause:
     if (status = "Status : Paused") {
         goto Start
     } else {
         toggle := False
-        status := "Status : Paused"
+        status := "Status : Paused" 
         GuiControl,, StatusText, %status%
-    }
+    } 
 Return
 
-; Stop avec F7
+; Stop avec F3
 Stop:
     status := "Status : Stopping."
     GuiControl,, StatusText, %status%
-    Sleep 2000
+    Sleep 1000
     ExitApp
 Return
 
 ; Configurer les touches du clavier
-F7::
+F3::
     goto Stop
 Return
 
-F8::
+F2::
     goto Pause
 Return
 
-F9::
+F1::
     goto Start
 Return
