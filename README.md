@@ -4,13 +4,16 @@ A macro for the roblox game One Fruit
 # Features
 - Auto cast skills
 - Auto enable conqueror's haki
-- Auto claim time rewards (coming soon)
+- Auto claim time rewards
 
 # Installation
 - First, you need to install [AutoHotKey v1.1](https://www.autohotkey.com/) (**not 2.0**).
 - Second, download the [most recent version of the macro](https://github.com/BuilderDolphin/dolphSol-Macro/releases/latest).
 - Once done, extract the .ZIP file and run main.ahk in the folder.
 - Enjoy the macro :D
+
+# Next update informations
+- QWERTY support is coming support 🙏
 
 # Notes & Credits
 - The macro is solo developed by me and tested by my friends.
