@@ -1,14 +1,20 @@
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+; SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-CoordMode, Pixel, Screen  ; S'assure que les coordonnées sont basées sur l'écran entier
 
-; Fichier de configuration
+CoordMode, Mouse, Screen
+
+#SingleInstance, force
+#Persistent
+#Requires AutoHotkey v1.1+ 64-bit
+
+#Include fonctions.ahk
+
+; initialisation de variables
 configFile := A_ScriptDir . "\config.ini"
 status := "Status : Configuration"
-PixelGetColor, color, 196, 840, RGB
 
-; Lecture du fichier de configuration au démarrage
+; Lecture du config.ini
 IfNotExist, %configFile% ; création du fichier s'il n'existe pas
 {
     IniWrite, 0, %configFile%, Categories, FightingStyle
@@ -39,11 +45,12 @@ IfNotExist, %configFile% ; création du fichier s'il n'existe pas
     IniWrite, 0, %configFile%, SkillsGun, V
     IniWrite, 0, %configFile%, SkillsGun, B
     IniWrite, 0, %configFile%, SkillsGun, F
-    ; IniWrite, 0, %configFile%, Settings, AutoObservationHaki
-    ; IniWrite, 0, %configFile%, Settings, AutoArmamentHaki
     IniWrite, 0, %configFile%, Settings, AutoConquerorHaki
+    IniWrite, 0, %configFile%, Settings, AutoClaimTimeRewards
     Iniwrite, 500, %configFile%, Settings, CategoriesTimeInput ; valeur par défaut de l'intervalle = 500
     IniWrite, 1000, %configFile%, Settings, SkillTimeInput ; valeur par défaut de l'invervalle = 1000
+    IniWrite, 0, %configFile%, Settings, TRDropFruitIfStorageFull
+    IniWrite, 50, %configFile%, Settings, TRCheckCount
 }
 IniRead, FightingStyle, %configFile%, Categories, FightingStyle
 IniRead, Sword, %configFile%, Categories, Sword
@@ -73,89 +80,108 @@ IniRead, GunSkillC, %configFile%, SkillsGun, C
 IniRead, GunSkillV, %configFile%, SkillsGun, V
 IniRead, GunSkillB, %configFile%, SkillsGun, B
 IniRead, GunSkillF, %configFile%, SkillsGun, F
-; IniRead, AutoObservationHaki, %configFile%, Settings, AutoObservationHaki
-; IniRead, AutoArmamentHaki, %configFile%, Settings, AutoArmamentHaki
 IniRead, AutoConquerorHaki, %configFile%, Settings, AutoConquerorHaki
+IniRead, AutoClaimTimeRewards, %configFile%, Settings, AutoClaimTimeRewards
 IniRead, CategoriesTimeInput, %configFile%, Settings, CategoriesTimeInput
 IniRead, SkillTimeInput, %configFile%, Settings, SkillTimeInput
+IniRead, TRDropFruitIfStorageFull, %configFile%, Settings, TRDropFruitIfStorageFull
+IniRead, TRCheckCount, %configFile%, Settings, TRCheckCount
 
-; Création de l'interface graphique
-Gui, Add, Text,, Select what categories and skills you want to enable :
-Gui, Add, Checkbox, vFightingStyle Checked%FightingStyle%, Fighting Style
-Gui, Add, Checkbox, vSword Checked%Sword%, Sword
-Gui, Add, Checkbox, vFruit Checked%Fruit%, Fruit
-Gui, Add, Checkbox, vGun Checked%Gun%, Gun
+; INTERFACE
+Gui, Add, Tab2, vMyTab w600 h210, Main|Others|Settings  ; Ajoute les onglets
 
-Gui, Add, Text,, Select skills for each category:
+; --- Onglet "Configuration" ---
+Gui, Tab, 1
 
-Gui, Add, Text,, Fighting Style skills:
-Gui, Add, Checkbox, vFSkillW Checked%FSkillW%, W
-Gui, Add, Checkbox, vFSkillX Checked%FSkillX%, X
-Gui, Add, Checkbox, vFSkillC Checked%FSkillC%, C
-Gui, Add, Checkbox, vFSkillV Checked%FSkillV%, V
-Gui, Add, Checkbox, vFSkillB Checked%FSkillB%, B
-Gui, Add, Checkbox, vFSkillF Checked%FSkillF%, F
+; GroupBox pour Fighting Style
+Gui, Add, GroupBox, x10 y30 w140 h180, Fighting Style
+Gui, Add, Checkbox, vFightingStyle x20 y50 Checked%FightingStyle%, Enable Fighting Style
+Gui, Add, Text, x20 y70, Skills:
+Gui, Add, Checkbox, vFSkillW x20 y90 Checked%FSkillW%, W
+Gui, Add, Checkbox, vFSkillX x20 y110 Checked%FSkillX%, X
+Gui, Add, Checkbox, vFSkillC x20 y130 Checked%FSkillC%, C
+Gui, Add, Checkbox, vFSkillV x20 y150 Checked%FSkillV%, V
+Gui, Add, Checkbox, vFSkillB x20 y170 Checked%FSkillB%, B
+Gui, Add, Checkbox, vFSkillF x20 y190 Checked%FSkillF%, F
 
-Gui, Add, Text,, Sword skills:
-Gui, Add, Checkbox, vSSkillW Checked%SSkillW%, W
-Gui, Add, Checkbox, vSSkillX Checked%SSkillX%, X
-Gui, Add, Checkbox, vSSkillC Checked%SSkillC%, C
-Gui, Add, Checkbox, vSSkillV Checked%SSkillV%, V
-Gui, Add, Checkbox, vSSkillB Checked%SSkillB%, B
-Gui, Add, Checkbox, vSSkillF Checked%SSkillF%, F
+; GroupBox pour Sword
+Gui, Add, GroupBox, x160 y30 w140 h180, Sword
+Gui, Add, Checkbox, vSword x170 y50 Checked%Sword%, Enable Sword
+Gui, Add, Text, x170 y70, Skills:
+Gui, Add, Checkbox, vSSkillW x170 y90 Checked%SSkillW%, W
+Gui, Add, Checkbox, vSSkillX x170 y110 Checked%SSkillX%, X
+Gui, Add, Checkbox, vSSkillC x170 y130 Checked%SSkillC%, C
+Gui, Add, Checkbox, vSSkillV x170 y150 Checked%SSkillV%, V
+Gui, Add, Checkbox, vSSkillB x170 y170 Checked%SSkillB%, B
+Gui, Add, Checkbox, vSSkillF x170 y190 Checked%SSkillF%, F
 
-Gui, Add, Text,, Fruit skills:
-Gui, Add, Checkbox, vFruitSkillW Checked%FruitSkillW%, W
-Gui, Add, Checkbox, vFruitSkillX Checked%FruitSkillX%, X
-Gui, Add, Checkbox, vFruitSkillC Checked%FruitSkillC%, C
-Gui, Add, Checkbox, vFruitSkillV Checked%FruitSkillV%, V
-Gui, Add, Checkbox, vFruitSkillB Checked%FruitSkillB%, B
-Gui, Add, Checkbox, vFruitSkillF Checked%FruitSkillF%, F
+; GroupBox pour Fruit
+Gui, Add, GroupBox, x310 y30 w140 h180, Fruit
+Gui, Add, Checkbox, vFruit x320 y50 Checked%Fruit%, Enable Fruit
+Gui, Add, Text, x320 y70, Skills:
+Gui, Add, Checkbox, vFruitSkillW x320 y90 Checked%FruitSkillW%, W
+Gui, Add, Checkbox, vFruitSkillX x320 y110 Checked%FruitSkillX%, X
+Gui, Add, Checkbox, vFruitSkillC x320 y130 Checked%FruitSkillC%, C
+Gui, Add, Checkbox, vFruitSkillV x320 y150 Checked%FruitSkillV%, V
+Gui, Add, Checkbox, vFruitSkillB x320 y170 Checked%FruitSkillB%, B
+Gui, Add, Checkbox, vFruitSkillF x320 y190 Checked%FruitSkillF%, F
 
-Gui, Add, Text,, Gun skills:
-Gui, Add, Checkbox, vGunSkillW Checked%GunSkillW%, W
-Gui, Add, Checkbox, vGunSkillX Checked%GunSkillX%, X
-Gui, Add, Checkbox, vGunSkillC Checked%GunSkillC%, C
-Gui, Add, Checkbox, vGunSkillV Checked%GunSkillV%, V
-Gui, Add, Checkbox, vGunSkillB Checked%GunSkillB%, B
-Gui, Add, Checkbox, vGunSkillF Checked%GunSkillF%, F
+; GroupBox pour Gun
+Gui, Add, GroupBox, x460 y30 w140 h180, Gun
+Gui, Add, Checkbox, vGun x470 y50 Checked%Gun%, Enable Gun
+Gui, Add, Text, x470 y70, Skills:
+Gui, Add, Checkbox, vGunSkillW x470 y90 Checked%GunSkillW%, W
+Gui, Add, Checkbox, vGunSkillX x470 y110 Checked%GunSkillX%, X
+Gui, Add, Checkbox, vGunSkillC x470 y130 Checked%GunSkillC%, C
+Gui, Add, Checkbox, vGunSkillV x470 y150 Checked%GunSkillV%, V
+Gui, Add, Checkbox, vGunSkillB x470 y170 Checked%GunSkillB%, B
+Gui, Add, Checkbox, vGunSkillF x470 y190 Checked%GunSkillF%, F
 
-; Champ d'entrée pour les intervalles
-Gui, Add, Text,, Time interval between categories change (ms) :
-Gui, Add, Edit, vTimeInput w100, %CategoriesTimeInput%
-Gui, Add, Text,, Time interval between skills (ms) :
-Gui, Add, Edit, vTimeInput2 w100, %SkillTimeInput%
+; --- Onglet "Auto Tasks" ---
+Gui, Tab, 2
 
-; haki
-Gui, Add, Text,, Auto Haki activation:
-; Gui, Add, Checkbox, vAutoObservationHaki Checked%AutoObservationHaki%, Auto Observation Haki
-; Gui, Add, Checkbox, vAutoArmamentHaki Checked%AutoArmamentHaki%, Auto Armamement Haki
-Gui, Add, CHeckbox, vAutoConquerorHaki Checked%AutoConquerorHaki%, Auto Conqueror Haki
+Gui, Add, GroupBox, x10 y30 w160 h180, Automation
+Gui, Add, Text,x20 y50 , Auto Tasks activation:
+Gui, Add, Checkbox, x20 y70 vAutoConquerorHaki Checked%AutoConquerorHaki%, Auto Conqueror Haki
+Gui, Add, Checkbox, x20 y90 vAutoClaimTimeRewards gTRWarning Checked%AutoClaimTimeRewards%, Auto Claim Time Rewards
 
-; Boutons de validation et contrôle
-Gui, Add, Button, gValidate, Validate
-Gui, Add, Text,,
-Gui, Add, Button, gStart, F1 - Start
-Gui, Add, Button, gPause, F2 - Pause
-Gui, Add, Button, gStop, F3 - Stop
+; --- Onglet "Settings" ---
+Gui, Tab, 3
 
-Gui, Add, Text, vStatusText, %status%
+; intervalles
+Gui, Add, GroupBox, x10 y30 w140 h180, Intervals
+Gui, Add, Text, x20 y50, Categories change (ms):
+Gui, Add, Edit, x20 y70 vTimeInput w100, %CategoriesTimeInput%
+Gui, Add, Text, x20 y90, Skills cast (ms):
+Gui, Add, Edit, x20 y110 vTimeInput2 w100, %SkillTimeInput%
+
+; time rewards
+Gui, Add, GroupBox, x160 y30 w140 h180, Time Rewards
+Gui, Add, CheckBox, vTRDropFruitIfStorageFull x170 y50 Checked%TRDropFruitIfStorageFull%, Drop fruit if storage full
+Gui, Add, Text, x170 y70, Claim TR every X loops
+Gui, Add, Edit, x170 y90 vTRCheckCount w100, %TRCheckCount%
+
+
+Gui, Tab  ; Sort des onglets
+
+; --- Boutons de validation et de contrôle ---
+Gui, Add, Button, x20 y230 w100 gValidate, Validate
+Gui, Add, Button, x120 y230 w100 gStart, F1 - Start
+Gui, Add, Button, x220 y230 w100 gPause, F2 - Pause
+Gui, Add, Button, x320 y230 w100 gStop, F3 - Stop
+Gui, Add, Text, x500 y235 vStatusText, %status%
+
 GuiControl,, StatusText, %status%
 
-Gui, Show,, One Fruit Macro Configuration Panel
-Return
+Gui, Show,, Configuration Panel
+return
 
-; Validation des choix et sauvegarde dans config.ini
+
+; validation des paramètres et sauvegarde dans config.ini (bouton Valider)
 Validate:
     Gui, Submit, NoHide
-    ; Afficher les valeurs pour déboguer (used for programmation)
-    ; MsgBox, FightingStyle: %FightingStyle%`nSword: %Sword%`nFruit: %Fruit%`nGun: %Gun%`n
-    ; MsgBox, FSkillW: %FSkillW%`nFSkillX: %FSkillX%`nFSkillC: %FSkillC%`nFSkillV: %FSkillV%`nFSkillB: %FSkillB%`nFSkillF: %FSkillF%`n
-    ; MsgBox, SSkillW: %SSkillW%`nSSkillX: %SSkillX%`nSSkillC: %SSkillC%`nSSkillV: %SSkillV%`nSSkillB: %SSkillB%`nSSkillF: %SSkillF%`n
-    ; MsgBox, FruitSkillW: %FruitSkillW%`nFruitSkillX: %FruitSkillX%`nFruitSkillC: %FruitSkillC%`nFruitSkillV: %FruitSkillV%`nFruitSkillB: %FruitSkillB%`nFruitSkillF: %FruitSkillF%`n
-    ; MsgBox, GunSkillW: %GunSkillW%`nGunSkillX: %GunSkillX%`nGunSkillC: %GunSkillC%`nGunSkillV: %GunSkillV%`nGunSkillB: %GunSkillB%`nGunSkillF: %GunSkillF%`n
 
-    ; Sauvegarde des choix dans le fichier de configuration
+    ; sauvegarde des parametres
     IniWrite, %FightingStyle%, %configFile%, Categories, FightingStyle
     IniWrite, %Sword%, %configFile%, Categories, Sword
     IniWrite, %Fruit%, %configFile%, Categories, Fruit
@@ -184,11 +210,12 @@ Validate:
     IniWrite, %GunSkillV%, %configFile%, SkillsGun, V
     IniWrite, %GunSkillB%, %configFile%, SkillsGun, B
     IniWrite, %GunSkillF%, %configFile%, SkillsGun, F
-    ; IniWrite, %AutoObservationHaki%, %configFile%, Settings, AutoObservationHaki
-    ; IniWrite, %AutoArmamentHaki%, %configFile%, Settings, AutoArmamentHaki
-    IniWrite, %AutoConquerorHaki%, %configFile%, Settings, AutoConquerorHaki 
+    IniWrite, %AutoConquerorHaki%, %configFile%, Settings, AutoConquerorHaki
+    IniWrite, %AutoClaimTimeRewards%, %configFile%, Settings, AutoClaimTimeRewards
     Iniwrite, %CategoriesTimeInput%, %configFile%, Settings, CategoriesTimeInput
     IniWrite, %SkillTimeInput%, %configFile%, Settings, SkillTimeInput
+    IniWrite, %TRDropFruitIfStorageFull%, %configFile%, Settings, TRDropFruitIfStorageFull
+    IniWrite, %TRCheckCount%, %configFile%, Settings, TRCheckCount
     MsgBox, Settings have been successfully saved.
 Return
 
@@ -203,24 +230,21 @@ Start:
     toggle := true
 
     While toggle {
-        ; if AutoObservationHaki {
-        ;     if (color != 0x54FBFB) {
-        ;         Send {r}
-        ;         Sleep, %SkillTimeInput%
-        ;     }
-        ; }
-        ; if AutoArmamentHaki {
-        ;     Send {r}
-        ;     Sleep, 5000
-        ; }
+        if AutoClaimTimeRewards {
+            Loopcount := Loopcount + 1
+            if (Loopcount = TRCheckCount) {
+                ClaimTimeRewards()
+                Loopcount := 0
+                Sleep, %CategoriesTimeInput%
+            }
+        }
         if AutoConquerorHaki {
             Send {h}
-            Sleep, %SkillTimeInput%
+            Sleep, %CategoriesTimeInput%
         }
         if FightingStyle {
             Send {&}
-            Sleep, %SkillTimeInput%
-            ; Envoyer les compétences pour Fighting Style
+            Sleep, %CategoriesTimeInput%
             if (FSkillW) {
                 Send {w}
                 Sleep, %SkillTimeInput%
@@ -245,15 +269,13 @@ Start:
                 Send {f}
                 Sleep, %SkillTimeInput%
             }
-            Sleep, %CategoriesTimeInput%
         }
         if Sword {
             Send {"}
-            Sleep, %SkillTimeInput%
-            ; Envoyer les compétences pour Sword
+            Sleep, %CategoriesTimeInput%
             if (SSkillW) {
                 Send {w}
-                Sleep, %SkillTimeInput%
+                Sleep, %CategoriesTimeInput%
             }
             if (SSkillX) {
                 Send {x}
@@ -275,12 +297,10 @@ Start:
                 Send {f}
                 Sleep, %SkillTimeInput%
             }
-            Sleep, %CategoriesTimeInput%
         }
         if Fruit {
             Send {'}
-            Sleep, %SkillTimeInput%
-            ; Envoyer les compétences pour Fruit
+            Sleep, %CategoriesTimeInput%
             if (FruitSkillW) {
                 Send {w}
                 Sleep, %SkillTimeInput%
@@ -305,12 +325,10 @@ Start:
                 Send {f}
                 Sleep, %SkillTimeInput%
             }
-            Sleep, %CategoriesTimeInput%
         }
         if Gun {
             Send {(}
-            Sleep, %SkillTimeInput%
-            ; Envoyer les compétences pour Gun
+            Sleep, %CategoriesTimeInput%
             if (GunSkillW) {
                 Send {w}
                 Sleep, %SkillTimeInput%
@@ -335,16 +353,21 @@ Start:
                 Send {f}
                 Sleep, %SkillTimeInput%
             }
-            Sleep, %CategoriesTimeInput%
         }
     }
 Return
 
+TRWarning:
+    Gui, Submit, NoHide
+    if AutoClaimTimeRewards {
+        TRWarning()
+    }
+Return
 
 ; Pause avec F2
 Pause:
     if (status = "Status : Paused") {
-        goto Start
+        Goto, Start
     } else {
         toggle := False
         status := "Status : Paused" 
@@ -362,13 +385,17 @@ Return
 
 ; Configurer les touches du clavier
 F3::
-    goto Stop
+    Goto, Stop
 Return
 
 F2::
-    goto Pause
+    Goto, Pause
 Return
 
 F1::
-    goto Start
+    Goto, Start
+Return
+
+GuiClose:
+    ExitApp
 Return
