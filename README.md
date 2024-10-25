@@ -13,7 +13,7 @@ A macro for the roblox game One Fruit
 - Enjoy the macro :D
 
 # Next update informations
-- QWERTY support is coming support 🙏
+- QWERTY support is coming next update 🙏
 
 # Notes & Credits
 - The macro is solo developed by me and tested by my friends.
