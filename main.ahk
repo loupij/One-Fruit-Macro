@@ -45,12 +45,12 @@ IfNotExist, %configFile% ; création du fichier s'il n'existe pas
     IniWrite, 0, %configFile%, SkillsGun, V
     IniWrite, 0, %configFile%, SkillsGun, B
     IniWrite, 0, %configFile%, SkillsGun, F
-    IniWrite, 0, %configFile%, Settings, AutoConquerorHaki
-    IniWrite, 0, %configFile%, Settings, AutoClaimTimeRewards
-    Iniwrite, 500, %configFile%, Settings, CategoriesTimeInput ; valeur par défaut de l'intervalle = 500
-    IniWrite, 1000, %configFile%, Settings, SkillTimeInput ; valeur par défaut de l'invervalle = 1000
-    IniWrite, 0, %configFile%, Settings, TRDropFruitIfStorageFull
-    IniWrite, 50, %configFile%, Settings, TRCheckCount
+    IniWrite, 0, %configFile%, AutoTasks, AutoConquerorHaki
+    IniWrite, 0, %configFile%, AutoTasks, AutoClaimTimeRewards
+    Iniwrite, 500, %configFile%, Intervals, CategoriesTimeInput ; valeur par défaut de l'intervalle = 500
+    IniWrite, 1000, %configFile%, Intervals, SkillTimeInput ; valeur par défaut de l'invervalle = 1000
+    IniWrite, 0, %configFile%, TRSettings, TRDropFruitIfStorageFull
+    IniWrite, 50, %configFile%, TRSettings, TRCheckCount
 }
 IniRead, FightingStyle, %configFile%, Categories, FightingStyle
 IniRead, Sword, %configFile%, Categories, Sword
@@ -80,12 +80,12 @@ IniRead, GunSkillC, %configFile%, SkillsGun, C
 IniRead, GunSkillV, %configFile%, SkillsGun, V
 IniRead, GunSkillB, %configFile%, SkillsGun, B
 IniRead, GunSkillF, %configFile%, SkillsGun, F
-IniRead, AutoConquerorHaki, %configFile%, Settings, AutoConquerorHaki
-IniRead, AutoClaimTimeRewards, %configFile%, Settings, AutoClaimTimeRewards
-IniRead, CategoriesTimeInput, %configFile%, Settings, CategoriesTimeInput
-IniRead, SkillTimeInput, %configFile%, Settings, SkillTimeInput
-IniRead, TRDropFruitIfStorageFull, %configFile%, Settings, TRDropFruitIfStorageFull
-IniRead, TRCheckCount, %configFile%, Settings, TRCheckCount
+IniRead, AutoConquerorHaki, %configFile%, AutoTasks, AutoConquerorHaki
+IniRead, AutoClaimTimeRewards, %configFile%, AutoTasks, AutoClaimTimeRewards
+IniRead, CategoriesTimeInput, %configFile%, Intervals, CategoriesTimeInput
+IniRead, SkillTimeInput, %configFile%, Intervals, SkillTimeInput
+IniRead, TRDropFruitIfStorageFull, %configFile%, TRSettings, TRDropFruitIfStorageFull
+IniRead, TRCheckCount, %configFile%, TRSettings, TRCheckCount
 
 ; INTERFACE
 Gui, Add, Tab2, vMyTab w600 h210, Main|Others|Settings  ; Ajoute les onglets
@@ -210,31 +210,38 @@ Validate:
     IniWrite, %GunSkillV%, %configFile%, SkillsGun, V
     IniWrite, %GunSkillB%, %configFile%, SkillsGun, B
     IniWrite, %GunSkillF%, %configFile%, SkillsGun, F
-    IniWrite, %AutoConquerorHaki%, %configFile%, Settings, AutoConquerorHaki
-    IniWrite, %AutoClaimTimeRewards%, %configFile%, Settings, AutoClaimTimeRewards
-    Iniwrite, %CategoriesTimeInput%, %configFile%, Settings, CategoriesTimeInput
-    IniWrite, %SkillTimeInput%, %configFile%, Settings, SkillTimeInput
-    IniWrite, %TRDropFruitIfStorageFull%, %configFile%, Settings, TRDropFruitIfStorageFull
-    IniWrite, %TRCheckCount%, %configFile%, Settings, TRCheckCount
+    IniWrite, %AutoConquerorHaki%, %configFile%, AutoTasks, AutoConquerorHaki
+    IniWrite, %AutoClaimTimeRewards%, %configFile%, AutoTasks, AutoClaimTimeRewards
+    Iniwrite, %CategoriesTimeInput%, %configFile%, Intervals, CategoriesTimeInput
+    IniWrite, %SkillTimeInput%, %configFile%, Intervals, SkillTimeInput
+    IniWrite, %TRDropFruitIfStorageFull%, %configFile%, TRSettings, TRDropFruitIfStorageFull
+    IniWrite, %TRCheckCount%, %configFile%, TRSettings, TRCheckCount
     MsgBox, Settings have been successfully saved.
 Return
 
 
 ; Boucle principale
+
 Start:
     status := "Status : Starting"
     GuiControl,, StatusText, %status%
+    Loopcount := 0
     Sleep 1000
     status := "Status : Running"
     GuiControl,, StatusText, %status%
     toggle := true
 
+    if AutoClaimTimeRewards {
+        ClaimTimeRewards()
+    }
     While toggle {
         if AutoClaimTimeRewards {
+            MsgBox, oui
             Loopcount := Loopcount + 1
             if (Loopcount = TRCheckCount) {
                 ClaimTimeRewards()
-                Loopcount := 0
+                Loopcount := 1
+                TRFirst := False
                 Sleep, %CategoriesTimeInput%
             }
         }
@@ -364,10 +371,14 @@ TRWarning:
     }
 Return
 
-; Pause avec F2
+TRCheckCountVerifValue:
+    if (TRCheckCount = 0) {
+        MsgBOx, Error : value must be superior to 0 for Time Rewards claiming interval.
+    }
 Pause:
     if (status = "Status : Paused") {
         Goto, Start
+        doTR := false
     } else {
         toggle := False
         status := "Status : Paused" 
@@ -375,7 +386,6 @@ Pause:
     } 
 Return
 
-; Stop avec F3
 Stop:
     status := "Status : Stopping."
     GuiControl,, StatusText, %status%
@@ -383,7 +393,6 @@ Stop:
     ExitApp
 Return
 
-; Configurer les touches du clavier
 F3::
     Goto, Stop
 Return
