@@ -236,7 +236,6 @@ Start:
     }
     While toggle {
         if AutoClaimTimeRewards {
-            MsgBox, oui
             Loopcount := Loopcount + 1
             if (Loopcount = TRCheckCount) {
                 ClaimTimeRewards()
