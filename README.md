@@ -12,8 +12,9 @@ A macro for the roblox game One Fruit
 - Once done, extract the .ZIP file and run main.ahk in the folder.
 - Enjoy the macro :D
 
-# Next update informations
-- QWERTY support is coming next update 🙏
+# Next updates informations (features coming soon)
+- A stats system
+- Auto enable observation & armament haki
 
 # Notes & Credits
 - The macro is solo developed by me and tested by my friends.
