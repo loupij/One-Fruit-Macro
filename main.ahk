@@ -864,7 +864,6 @@ Return
 
 handlePause() {
     global running, paused
-    MsgBox("entrée dans la fonction")
     if running {
         running := false
         paused := true
@@ -872,7 +871,6 @@ handlePause() {
         updateStats()
         updateStatus("Paused")
         logMessage("Macro Paused")
-        MsgBox("Please note that the pause feature isn't very stable currently. It is suggested to stop instead.")
     } else {
         logMessage("[mainLoopStart from paused] Restarting mainLoop")
         updateStatus("Restarting")
