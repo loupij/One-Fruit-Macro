@@ -34,14 +34,12 @@ global lastLoggedMessage := false
 F1::mainLoopStart()
 F2:: {
     global running, paused
-    MsgBox("entrée dans la fonction")
     if !paused {
         paused := true
         SetTimer(updateStats,0)
         updateStats()
         updateStatus("Paused")
         logMessage("Macro Paused")
-        MsgBox("Please note that the pause feature isn't very stable currently. It is suggested to stop instead.")
     } else {
         logMessage("[mainLoopStart from paused] Restarting mainLoop")
         updateStatus("Restarting")
