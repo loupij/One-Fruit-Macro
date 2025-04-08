@@ -1,4 +1,3 @@
-; V1toV2: Removed #NoEnv
 #SingleInstance force
 Persistent
 #Requires Autohotkey v2.0
@@ -10,7 +9,7 @@ CoordMode("Mouse", "Screen")
 ; #Include fonctions.ahk
 
 ; do not modify
-global version := "2.0.0"
+global version := "2.0.2"
 ; files
 global configFile := A_ScriptDir . "\config.ini"
 global logFile := A_ScriptDir . "\log.txt"
@@ -191,9 +190,9 @@ createUI() {
         logMessage("Creating Defence Groupbox (Main)", 1)
         mainUI.Add("GroupBox", "x160 y30 w140 h180", "Defence")
         ogcCheckboxDefense := mainUI.Add("Checkbox", "vDefence x170 y50 Checked" . Defence, "Enable Defence")
-        mainUI.Add("Text", "x170 y70", "Sleep Time (ms):")
+        mainUI.Add("Text", "x170 y70", "Sleep Time (sec):")
         ogcEditDefenseSleepTime := mainUI.Add("Edit", "x170 y90 w100 vDefenceSleepTime Number", DefenceSleepTime)
-        mainUI.Add("UpDown", "Range1-120000", DefenceSleepTime)
+        mainUI.Add("UpDown", "Range1-3600", DefenceSleepTime)
     
         ; GroupBox pour Sword (décalé à droite)
         logMessage("Creating Sword Groupbox (Main)", 1)
@@ -295,7 +294,7 @@ createUI() {
     mainUI.Add("GroupBox", "x10 y30 w590 h180")
     ogcTextTimeRewardsClaimed := mainUI.Add("Text", "x20 y50 vTextTimeRewardsClaimedText", "Time Rewards Claimed : " . to_number(statsTimeRewardsClaimed))
     ogcTextFightingStyleSkillsEnabled := mainUI.Add("Text", "x20 y70 vTextFightingStyleSkillsEnabled", "Fighting Style Skills Enabled : " . to_number(statsFightingStyleSkillsEnabled))
-    ogcTextDefenceTimeWaited := mainUI.Add("Text", "x20 y90 vTextDefenseTimeWaited", "Defence Time Waited (ms) : " . getTimerDisplay(statsDefenceTimeWaited/1000))
+    ogcTextDefenceTimeWaited := mainUI.Add("Text", "x20 y90 vTextDefenseTimeWaited", "Defence Time Waited (ms) : " . getTimerDisplay(statsDefenceTimeWaited))
     ogcTextSwordSkillsEnabled := mainUI.Add("Text", "x20 y110 vTextSwordSkillsEnabled", "Sword Skills Enabled : " . to_number(statsSwordSkillsEnabled))
     ogcTextFruitSkillsEnabled := mainUI.Add("Text", "x20 y130 vTextFruitSkillsEnabled", "Fruit Skills Enabled : " . to_number(statsFruitSkillsEnabled))
     ogcTextGunSkillsEnabled := mainUI.Add("Text", "x20 y150 vTextGunSkillsEnabled", "Gun Skills Enabled : " . to_number(statsGunSkillsEnabled))
@@ -428,7 +427,7 @@ loadOptionsStats() {
             IniWrite(0, configFile, "FightingStyleSkills", "V")
             IniWrite(0, configFile, "FightingStyleSkills", "B")
             IniWrite(0, configFile, "FightingStyleSkills", "F")
-            IniWrite(5000, configFile, "Defence", "DefenceSleepTime") ; valeur par défaut : 5 secondes
+            IniWrite(5, configFile, "Defence", "DefenceSleepTime") ; valeur par défaut : 5 secondes
             IniWrite(0, configFile, "SwordSkills", "Z")
             IniWrite(0, configFile, "SwordSkills", "X")
             IniWrite(0, configFile, "SwordSkills", "C")
@@ -616,7 +615,7 @@ mainLoop() {
             Send("{2}")
         }
         ; MsgBox(DefenceSleepTime Type(DefenceSleepTime))
-        Sleep(DefenceSleepTime) ; %DefenceSleepTime%
+        Sleep(DefenceSleepTime * 1000) ; %DefenceSleepTime%
         statsDefenceTimeWaited += DefenceSleepTime
     }
     ; sword
@@ -747,8 +746,8 @@ ClaimTimeRewards() {
     } else {
         Send("{m}")
     }
-    Sleep(mouseRestTime)
     ; ClickMouse(420, 830) ouvrir le menu
+    Sleep(mouseRestTime)
     ClickMouse(1320, 500) ; bouton TIME REWARDS
     ClickMouse(740, 430) ; 1
     ClickMouse(850, 430) ; 2
@@ -783,7 +782,7 @@ updateStats(logging := 0) {
         ogcTextTimeRewardsClaimed.Value := "Time Rewards Claimed : " statsTimeRewardsClaimed
     }
     ogcTextFightingStyleSkillsEnabled.Value := "Fighting Style Skills Enabled : " statsFightingStyleSkillsEnabled
-    ogcTextDefenceTimeWaited.Value := "Defence Time Waited : " getTimerDisplay(statsDefenceTimeWaited/1000)
+    ogcTextDefenceTimeWaited.Value := "Defence Time Waited : " getTimerDisplay(statsDefenceTimeWaited)
     ogcTextSwordSkillsEnabled.Value := "Sword Skills Enabled : " statsSwordSkillsEnabled
     ogcTextFruitSkillsEnabled.Value := "Fruit Skills Enabled : " statsFruitSkillsEnabled
     ogcTextGunSkillsEnabled.Value := "Gun Skills Enabled : " statsGunSkillsEnabled
@@ -849,8 +848,8 @@ updateStatus(newStatus) {
 }
 
 TRWarning(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *)
-{ ; V1toV2: Added bracket
-global ; V1toV2: Made function global
+{
+global
     oSaved := mainUI.Submit("0")
     if oSaved.AutoClaimTimeRewards {
         MsgBox("Caution! This feature only works with 1920x1080 screens.`nAlso, make sure your Roblox window is fully windowed (not fullscreen)")
@@ -906,30 +905,30 @@ MainUIClose(*) {
 
 ; boutons interface
 SaveButton(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *)
-{ ; V1toV2: Added bracket
-global ; V1toV2: Made function global
+{
+global
     saveOptionsStats(1)
     loadOptionsStats()
 Return
 }
 
 StartButton(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *)
-{ ; V1toV2: Added bracket
-global ; V1toV2: Made function global
+{
+global
     mainLoopStart()
 Return
 }
 
 PauseButton(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *)
-{ ; V1toV2: Added bracket
-global ; V1toV2: Made function global
+{
+global
     handlePause()
 Return
 }
 
 StopButton(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *)
-{ ; V1toV2: Added bracket
-global ; V1toV2: Made function global
+{
+global
     Stop()
 Return
 } 
@@ -942,8 +941,8 @@ Return
 }
 
 EditScript(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *)
-{ ; V1toV2: Added bracket
-global ; V1toV2: Made function global
+{
+global
     Edit()
 Return
 
