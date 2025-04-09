@@ -31,7 +31,7 @@ global maxLogSize := 1048576 ; 1 MB
 global lastLoggedMessage := false
 
 F1::mainLoopStart()
-F2:: {
+F2::{
     global running, paused
     if !paused {
         paused := true
@@ -551,10 +551,13 @@ mainLoopStart() {
 mainLoop() {
     global
     ; time rewards
+    MsgBox(paused)
     if AutoClaimTimeRewards {
         Loopcount := Loopcount + 1
         if (Loopcount = TRCheckCount) {
             ClaimTimeRewards()
+            Sleep(2000)
+            updateStatus("Running")
             Loopcount := 1
             Sleep(CategoriesTimeInput)
         }
@@ -582,29 +585,34 @@ mainLoop() {
             } else {
                 Send("{z}")
             }
+            statsFightingStyleSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FSkillX) {
             Send("{x}")
+            statsFightingStyleSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FSkillC) {
             Send("{c}")
+            statsFightingStyleSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FSkillV) {
             Send("{v}")
+            statsFightingStyleSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FSkillB) {
             Send("{b}")
+            statsFightingStyleSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FSkillF) {
             Send("{f}")
+            statsFightingStyleSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        statsFightingStyleSkillsEnabled += 1
     }
     ; defense
     if Defence {
@@ -633,29 +641,34 @@ mainLoop() {
             } else {
                 Send("{z}")
             }
+            statsSwordSkillsEnabled += 1
             Sleep(CategoriesTimeInput)
         }
         if (SSkillX) {
             Send("{x}")
+            statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (SSkillC) {
             Send("{c}")
+            statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (SSkillV) {
             Send("{v}")
+            statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (SSkillB) {
             Send("{b}")
+            statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (SSkillF) {
             Send("{f}")
+            statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        statsSwordSkillsEnabled += 1
     }
     ; fruit
     if Fruit {
@@ -672,29 +685,34 @@ mainLoop() {
             } else {
                 Send("{z}")
             }
+            statsFruitSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FruitSkillX) {
             Send("{x}")
+            statsFruitSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FruitSkillC) {
             Send("{c}")
+            statsFruitSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FruitSkillV) {
             Send("{v}")
+            statsFruitSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FruitSkillB) {
             Send("{b}")
+            statsFruitSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (FruitSkillF) {
             Send("{f}")
+            statsFruitSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        statsFruitSkillsEnabled += 1
     }
     ; gun
     if Gun {
@@ -711,29 +729,34 @@ mainLoop() {
             } else {
                 Send("{z}")
             }
+            statsGunSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (GunSkillX) {
             Send("{x}")
+            statsGunSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (GunSkillC) {
             Send("{c}")
+            statsGunSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (GunSkillV) {
             Send("{v}")
+            statsGunSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (GunSkillB) {
             Send("{b}")
+            statsGunSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
         if (GunSkillF) {
             Send("{f}")
+            statsGunSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        statsGunSkillsEnabled += 1
     }
 }
 
@@ -767,7 +790,7 @@ ClaimTimeRewards() {
     }
     MouseMove(960, 280) ; Retour en haut de l'écran
     statsTimeRewardsClaimed += 1
-    logMessage("[ClaimTimeRewardsFinished claiming Time Rewards.")
+    logMessage("[ClaimTimeRewards] Finished claiming Time Rewards.")
     updateStatus("Time Rewards claimed")
 }
 
@@ -778,9 +801,7 @@ updateStats(logging := 0) {
     if logging {
     logMessage("[updateStats] Started updating statistics.", 1)
     }
-    if AutoClaimTimeRewards {
-        ogcTextTimeRewardsClaimed.Value := "Time Rewards Claimed : " statsTimeRewardsClaimed
-    }
+    ogcTextTimeRewardsClaimed.Value := "Time Rewards Claimed : " statsTimeRewardsClaimed
     ogcTextFightingStyleSkillsEnabled.Value := "Fighting Style Skills Enabled : " statsFightingStyleSkillsEnabled
     ogcTextDefenceTimeWaited.Value := "Defence Time Waited : " getTimerDisplay(statsDefenceTimeWaited)
     ogcTextSwordSkillsEnabled.Value := "Sword Skills Enabled : " statsSwordSkillsEnabled
