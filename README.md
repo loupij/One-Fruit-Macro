@@ -2,9 +2,11 @@
 A macro for the roblox game One Fruit
 
 # Features
-- Auto cast skills
+- Auto cast skills for fighting styles, swords and gun
+- A defence sleeping time so that you can train your defence
 - Auto enable conqueror's haki
 - Auto claim time rewards
+- A stats tracker
 
 # Installation
 - First, you need to install [AutoHotKey v2](https://www.autohotkey.com/).
