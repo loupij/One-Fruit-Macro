@@ -9,7 +9,7 @@ CoordMode("Mouse", "Screen")
 ; #Include fonctions.ahk
 
 ; do not modify
-global version := "2.0.2"
+global version := "2.0.3"
 ; files
 global configFile := A_ScriptDir . "\config.ini"
 global logFile := A_ScriptDir . "\log.txt"
