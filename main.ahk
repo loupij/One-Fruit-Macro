@@ -9,7 +9,7 @@ CoordMode("Mouse", "Screen")
 ; #Include fonctions.ahk
 
 ; do not modify
-global version := "2.0.3"
+global version := "2.0.3.5"
 ; files
 global configFile := A_ScriptDir . "\config.ini"
 global logFile := A_ScriptDir . "\log.txt"
@@ -551,7 +551,6 @@ mainLoopStart() {
 mainLoop() {
     global
     ; time rewards
-    MsgBox(paused)
     if AutoClaimTimeRewards {
         Loopcount := Loopcount + 1
         if (Loopcount = TRCheckCount) {
