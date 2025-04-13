@@ -9,7 +9,7 @@ CoordMode("Mouse", "Screen")
 ; #Include fonctions.ahk
 
 ; do not modify
-global version := "2.0.3.5"
+global version := "2.1.0"
 ; files
 global configFile := A_ScriptDir . "\config.ini"
 global logFile := A_ScriptDir . "\log.txt"
@@ -31,29 +31,13 @@ global maxLogSize := 1048576 ; 1 MB
 global lastLoggedMessage := false
 
 F1::mainLoopStart()
-F2::{
-    global running, paused
-    if !paused {
-        paused := true
-        SetTimer(updateStats,0)
-        updateStats()
-        updateStatus("Paused")
-        logMessage("Macro Paused")
-    } else {
-        logMessage("[mainLoopStart from paused] Restarting mainLoop")
-        updateStatus("Restarting")
-        SetTimer(updateStats,5000)
-        Sleep(100)
-        updateStatus("Running")
-        paused := false
-    }
-}
+F2::handlePause()
 F3::Stop()
 
 ; options & stats
-global FightingStyle, FSkillZ, FSkillX, FSkillC, FSkillV, FSkillB, FruitSkillF
+global Melee, MeleeSkillZ, MeleeSkillX, MeleeSkillC, MeleeSkillV, MeleeSkillB, MeleeSkillF
 global Defence, DefenceSleepTime
-global Sword, SSkillZ, SSkillX, SSkillC, SSkillV, SSkillB, SSkillF
+global Sword, SwordSkillZ, SwordSkillX, SwordSkillC, SwordSkillV, SwordSkillB, SwordSkillF
 global Fruit, FruitSkillZ, FruitSkillX, FruitSkillC, FruitSkillV, FruitSkillB, FruitSkillF
 global Gun, GunSkillZ, GunSkillX, GunSkillC, GunSkillV, GunSkillB, GunSkillF
 global AutoConquerorHaki, AutoClaimTimeRewards
@@ -61,7 +45,7 @@ global CategoriesTimeInput, SkillTimeInput
 global TRDropFruit, TRCheckCount
 global AZERTYLayout
 global StatusBar
-global statsTimeRewardsClaimed, statsFightingStyleSkillsEnabled, statsDefenceTimeWaited, statsSwordSkillsEnabled, statsFruitSkillsEnabled, statsGunSkillsEnabled, statsTimeElapsed
+global statsTimeRewardsClaimed, statsMeleeSkillsEnabled, statsDefenceTimeWaited, statsSwordSkillsEnabled, statsFruitSkillsEnabled, statsGunSkillsEnabled, statsTimeElapsed
 
 startScript() {
     Global
@@ -166,7 +150,7 @@ createUI() {
         hGui := mainUI.Hwnd
     logMessage("Started creation of mainUI.", 1)
 
-    Tab := ogcTab2MyTab := mainUI.Add("Tab2", "vMyTab w760 h210", ["Main", "Others", "Settings", "Stats"])
+    Tab := ogcTab2MyTab := mainUI.Add("Tab2", "vMyTab w760 h210", ["Main", "Others", "Settings", "Stats", "Credits"])
     ; Ajoute les onglets
     logMessage("Creating Tabs...", 1)
 
@@ -174,17 +158,17 @@ createUI() {
     Tab.UseTab(1)
     logMessage("Creating first tab (Main)", 1)
 
-        ; GroupBox pour Fighting Style
-        logMessage("Creating Fighting Style Groupbox (Main)", 1)
-        mainUI.Add("GroupBox", "x10 y30 w140 h180", "Fighting Style")
-        ogcCheckboxFightingStyle := mainUI.Add("Checkbox", "vFightingStyle x20 y50 Checked" . FightingStyle, "Enable Fighting Style")
+        ; GroupBox pour Melee
+        logMessage("Creating Melee Groupbox (Main)", 1)
+        mainUI.Add("GroupBox", "x10 y30 w140 h180", "Melee")
+        ogcCheckboxMelee := mainUI.Add("Checkbox", "vMelee x20 y50 Checked" . Melee, "Enable Melee")
         mainUI.Add("Text", "x20 y70", "Skills:")
-        ogcCheckboxFSkillZ := mainUI.Add("Checkbox", "vFSkillZ x20 y90 Checked" . FSkillZ, "Z")
-        ogcCheckboxFSkillX := mainUI.Add("Checkbox", "vFSkillX x20 y110 Checked" . FSkillX, "X")
-        ogcCheckboxFSkillC := mainUI.Add("Checkbox", "vFSkillC x20 y130 Checked" . FSkillC, "C")
-        ogcCheckboxFSkillV := mainUI.Add("Checkbox", "vFSkillV x20 y150 Checked" . FSkillV, "V")
-        ogcCheckboxFSkillB := mainUI.Add("Checkbox", "vFSkillB x20 y170 Checked" . FSkillB, "B")
-        ogcCheckboxFSkillF := mainUI.Add("Checkbox", "vFSkillF x20 y190 Checked" . FSkillF, "F")
+        ogcCheckboxMeleeSkillZ := mainUI.Add("Checkbox", "vMeleeSkillZ x20 y90 Checked" . MeleeSkillZ, "Z")
+        ogcCheckboxMeleeSkillX := mainUI.Add("Checkbox", "vMeleeSkillX x20 y110 Checked" . MeleeSkillX, "X")
+        ogcCheckboxMeleeSkillC := mainUI.Add("Checkbox", "vMeleeSkillC x20 y130 Checked" . MeleeSkillC, "C")
+        ogcCheckboxMeleeSkillV := mainUI.Add("Checkbox", "vMeleeSkillV x20 y150 Checked" . MeleeSkillV, "V")
+        ogcCheckboxMeleeSkillB := mainUI.Add("Checkbox", "vMeleeSkillB x20 y170 Checked" . MeleeSkillB, "B")
+        ogcCheckboxMeleeSkillF := mainUI.Add("Checkbox", "vMeleeSkillF x20 y190 Checked" . MeleeSkillF, "F")
     
         ; GroupBox pour Defence
         logMessage("Creating Defence Groupbox (Main)", 1)
@@ -199,12 +183,12 @@ createUI() {
         mainUI.Add("GroupBox", "x310 y30 w140 h180", "Sword")
         ogcCheckboxSword := mainUI.Add("Checkbox", "vSword x320 y50 Checked" . Sword, "Enable Sword")
         mainUI.Add("Text", "x320 y70", "Skills:")
-        ogcCheckboxSSkillZ := mainUI.Add("Checkbox", "vSSkillZ x320 y90 Checked" . SSkillZ, "Z")
-        ogcCheckboxSSkillX := mainUI.Add("Checkbox", "vSSkillX x320 y110 Checked" . SSkillX, "X")
-        ogcCheckboxSSkillC := mainUI.Add("Checkbox", "vSSkillC x320 y130 Checked" . SSkillC, "C")
-        ogcCheckboxSSkillV := mainUI.Add("Checkbox", "vSSkillV x320 y150 Checked" . SSkillV, "V")
-        ogcCheckboxSSkillB := mainUI.Add("Checkbox", "vSSkillB x320 y170 Checked" . SSkillB, "B")
-        ogcCheckboxSSkillF := mainUI.Add("Checkbox", "vSSkillF x320 y190 Checked" . SSkillF, "F")
+        ogcCheckboxSwordSkillZ := mainUI.Add("Checkbox", "vSwordSkillZ x320 y90 Checked" . SwordSkillZ, "Z")
+        ogcCheckboxSwordSkillX := mainUI.Add("Checkbox", "vSwordSkillX x320 y110 Checked" . SwordSkillX, "X")
+        ogcCheckboxSwordSkillC := mainUI.Add("Checkbox", "vSwordSkillC x320 y130 Checked" . SwordSkillC, "C")
+        ogcCheckboxSwordSkillV := mainUI.Add("Checkbox", "vSwordSkillV x320 y150 Checked" . SwordSkillV, "V")
+        ogcCheckboxSwordSkillB := mainUI.Add("Checkbox", "vSwordSkillB x320 y170 Checked" . SwordSkillB, "B")
+        ogcCheckboxSwordSkillF := mainUI.Add("Checkbox", "vSwordSkillF x320 y190 Checked" . SwordSkillF, "F")
     
         ; GroupBox pour Fruit (décalé aussi)
         logMessage("Creating Fruit Groupbox (Main)", 1)
@@ -270,6 +254,11 @@ createUI() {
     ogcCheckboxStatusBar := mainUI.Add("Checkbox", "vStatusBar  x320 y70 Checked" . StatusBar, "Enable Status Bar")
     ogcCheckboxStatusBar.OnEvent("Click", EnableStatusBarButton.Bind("Normal"))
 
+    mainUI.Add("GroupBox", "x310 y90 w140 h60", "Import")
+    logMessage("Creating Import Groupbox (Settings)", 1)
+    ogcButtonImportSettings := mainUI.Add("Button", "x320 y110 w120 h23", "Import Settings && Stats")
+    ogcButtonImportSettings.OnEvent("Click", ImportOptionsStats.Bind("Normal"))
+
 
     ; DevMode
     if devMode {
@@ -287,21 +276,31 @@ createUI() {
         ogcButtonShowSettings.OnEvent("Click", ShowSettings.Bind("Normal"))
     }
 
-    ; Stats
+    ; --- Onglet "Stats" ---
     Tab.UseTab(4)
     logMessage("Creating fourth tab (Stats)", 1)
 
     mainUI.Add("GroupBox", "x10 y30 w590 h180")
     ogcTextTimeRewardsClaimed := mainUI.Add("Text", "x20 y50 vTextTimeRewardsClaimedText", "Time Rewards Claimed : " . to_number(statsTimeRewardsClaimed))
-    ogcTextFightingStyleSkillsEnabled := mainUI.Add("Text", "x20 y70 vTextFightingStyleSkillsEnabled", "Fighting Style Skills Enabled : " . to_number(statsFightingStyleSkillsEnabled))
+    ogcTextMeleeSkillsEnabled := mainUI.Add("Text", "x20 y70 vTextMeleeSkillsEnabled", "Melee Skills Enabled : " . to_number(statsMeleeSkillsEnabled))
     ogcTextDefenceTimeWaited := mainUI.Add("Text", "x20 y90 vTextDefenseTimeWaited", "Defence Time Waited (ms) : " . getTimerDisplay(statsDefenceTimeWaited))
     ogcTextSwordSkillsEnabled := mainUI.Add("Text", "x20 y110 vTextSwordSkillsEnabled", "Sword Skills Enabled : " . to_number(statsSwordSkillsEnabled))
     ogcTextFruitSkillsEnabled := mainUI.Add("Text", "x20 y130 vTextFruitSkillsEnabled", "Fruit Skills Enabled : " . to_number(statsFruitSkillsEnabled))
     ogcTextGunSkillsEnabled := mainUI.Add("Text", "x20 y150 vTextGunSkillsEnabled", "Gun Skills Enabled : " . to_number(statsGunSkillsEnabled))
     ogcTextTimeElapsed := mainUI.Add("Text", "x20 y170 vTextTimeElapsed", "Time Elapsed : " . getTimerDisplay(statsTimeElapsed))
-    
-    Tab.UseTab()  ; Sort des onglets
 
+    ; --- Onglet "Credits" ---
+    Tab.UseTab(5)
+    logMessage("Creating fifth tab (credits)", 1)
+    mainUI.Add("GroupBox", "x10 y30 w420 h90", "Credits")
+    mainUI.Add("Text", "x30 y50 w360", "This macro was created by me and tested by my friends.")
+
+    mainUI.Add("GroupBox", "x10 y120 w420 h90", "Inspiration")
+    mainUI.Add("Link", "x30 y150 w360", "This macro was inspired by <a href=`"https://github.com/BuilderDolphin/dolphSol-Macro`">DolphSol Sol's RNG Macro</a>.")
+    
+
+
+    Tab.UseTab()  ; Sort des onglets
     ; --- Boutons de validation et de contrôle ---
     logMessage("Creating Buttons", 1)
     ogcButtonSave := mainUI.Add("Button", "x8 y230 w80 h23", "Save")
@@ -351,24 +350,24 @@ saveOptionsStats(fromSaveButton := 0) {
         updateStatus("Saving options")
     }
 
-    IniWrite(Number(Osaved.FightingStyle), configFile, "Categories", "FightingStyle")
+    IniWrite(Number(Osaved.Melee), configFile, "Categories", "Melee")
     IniWrite(Number(Osaved.Defence), configFile, "Categories", "Defence")
     IniWrite(Number(Osaved.Sword), configFile, "Categories", "Sword")
     IniWrite(Number(Osaved.Fruit), configFile, "Categories", "Fruit")
     IniWrite(Number(Osaved.Gun), configFile, "Categories", "Gun")
-    IniWrite(Number(Osaved.FSkillZ), configFile, "FightingStyleSkills", "Z")
-    IniWrite(Number(Osaved.FSkillX), configFile, "FightingStyleSkills", "X")
-    IniWrite(Number(Osaved.FSkillC), configFile, "FightingStyleSkills", "C")
-    IniWrite(Number(Osaved.FSkillV), configFile, "FightingStyleSkills", "V")
-    IniWrite(Number(Osaved.FSkillB), configFile, "FightingStyleSkills", "B")
-    IniWrite(Number(Osaved.FSkillF), configFile, "FightingStyleSkills", "F")
+    IniWrite(Number(Osaved.MeleeSkillZ), configFile, "MeleeSkills", "Z")
+    IniWrite(Number(Osaved.MeleeSkillX), configFile, "MeleeSkills", "X")
+    IniWrite(Number(Osaved.MeleeSkillC), configFile, "MeleeSkills", "C")
+    IniWrite(Number(Osaved.MeleeSkillV), configFile, "MeleeSkills", "V")
+    IniWrite(Number(Osaved.MeleeSkillB), configFile, "MeleeSkills", "B")
+    IniWrite(Number(Osaved.MeleeSkillF), configFile, "MeleeSkills", "F")
     IniWrite(to_number(Osaved.DefenceSleepTime), configFile, "Defence", "DefenceSleepTime")
-    IniWrite(Number(Osaved.SSkillZ), configFile, "SwordSkills", "Z")
-    IniWrite(Number(Osaved.SSkillX), configFile, "SwordSkills", "X")
-    IniWrite(Number(Osaved.SSkillC), configFile, "SwordSkills", "C")
-    IniWrite(Number(Osaved.SSkillV), configFile, "SwordSkills", "V")
-    IniWrite(Number(Osaved.SSkillB), configFile, "SwordSkills", "B")
-    IniWrite(Number(Osaved.SSkillF), configFile, "SwordSkills", "F")
+    IniWrite(Number(Osaved.SwordSkillZ), configFile, "SwordSkills", "Z")
+    IniWrite(Number(Osaved.SwordSkillX), configFile, "SwordSkills", "X")
+    IniWrite(Number(Osaved.SwordSkillC), configFile, "SwordSkills", "C")
+    IniWrite(Number(Osaved.SwordSkillV), configFile, "SwordSkills", "V")
+    IniWrite(Number(Osaved.SwordSkillB), configFile, "SwordSkills", "B")
+    IniWrite(Number(Osaved.SwordSkillF), configFile, "SwordSkills", "F")
     IniWrite(Number(Osaved.FruitSkillZ), configFile, "FruitSkills", "Z")
     IniWrite(Number(Osaved.FruitSkillX), configFile, "FruitSkills", "X")
     IniWrite(Number(Osaved.FruitSkillC), configFile, "FruitSkills", "C")
@@ -390,7 +389,7 @@ saveOptionsStats(fromSaveButton := 0) {
     IniWrite(Number(Osaved.AZERTYLayout), configFile, "Others", "AZERTYLayout")
     IniWrite(Number(Osaved.StatusBar), configFile, "Others", "StatusBar")
     IniWrite(to_number(statsTimeRewardsClaimed), configFile, "Stats", "statsTimeRewardsClaimed")
-    IniWrite(to_number(statsFightingStyleSkillsEnabled), configFile, "Stats", "statsFightingStyleSkillsEnabled")
+    IniWrite(to_number(statsMeleeSkillsEnabled), configFile, "Stats", "statsMeleeSkillsEnabled")
     IniWrite(to_number(statsDefenceTimeWaited), configFile, "Stats", "statsDefenceTimeWaited")
     IniWrite(to_number(statsSwordSkillsEnabled), configFile, "Stats", "statsSwordSkillsEnabled")
     IniWrite(to_number(statsFruitSkillsEnabled), configFile, "Stats", "statsFruitSkillsEnabled")
@@ -416,17 +415,17 @@ loadOptionsStats() {
     if !FileExist(configFile) ; création du fichier s'il n'existe pas
         {
             logMessage("config file not found. Creating config.ini.")
-            IniWrite(0, configFile, "Categories", "FightingStyle")
+            IniWrite(0, configFile, "Categories", "Melee")
             IniWrite(0, configFile, "Categories", "Defence")
             IniWrite(0, configFile, "Categories", "Sword")
             IniWrite(0, configFile, "Categories", "Fruit")
             IniWrite(0, configFile, "Categories", "Gun")
-            IniWrite(0, configFile, "FightingStyleSkills", "Z")
-            IniWrite(0, configFile, "FightingStyleSkills", "X")
-            IniWrite(0, configFile, "FightingStyleSkills", "C")
-            IniWrite(0, configFile, "FightingStyleSkills", "V")
-            IniWrite(0, configFile, "FightingStyleSkills", "B")
-            IniWrite(0, configFile, "FightingStyleSkills", "F")
+            IniWrite(0, configFile, "MeleeSkills", "Z")
+            IniWrite(0, configFile, "MeleeSkills", "X")
+            IniWrite(0, configFile, "MeleeSkills", "C")
+            IniWrite(0, configFile, "MeleeSkills", "V")
+            IniWrite(0, configFile, "MeleeSkills", "B")
+            IniWrite(0, configFile, "MeleeSkills", "F")
             IniWrite(5, configFile, "Defence", "DefenceSleepTime") ; valeur par défaut : 5 secondes
             IniWrite(0, configFile, "SwordSkills", "Z")
             IniWrite(0, configFile, "SwordSkills", "X")
@@ -448,14 +447,14 @@ loadOptionsStats() {
             IniWrite(0, configFile, "GunSkills", "F")
             IniWrite(1, configFile, "AutoTasks", "AutoConquerorHaki")
             IniWrite(0, configFile, "AutoTasks", "AutoClaimTimeRewards")
-            IniWrite(500, configFile, "Intervals", "CategoriesTimeInput") ; valeur par défaut de l'intervalle = 500
-            IniWrite(1000, configFile, "Intervals", "SkillTimeInput") ; valeur par défaut de l'invervalle = 1000
+            IniWrite(250, configFile, "Intervals", "CategoriesTimeInput") ; valeur par défaut de l'intervalle = 500
+            IniWrite(500, configFile, "Intervals", "SkillTimeInput") ; valeur par défaut de l'invervalle = 1000
             IniWrite(0, configFile, "TRSettings", "TRDropFruit")
             IniWrite(50, configFile, "TRSettings", "TRCheckCount")
             IniWrite(0, configFile, "Others", "AZERTYLayout")
             IniWrite(1, configFile, "Others", "StatusBar")
             IniWrite(0, configFile, "Stats", "statsTimeRewardsClaimed")
-            IniWrite(0, configFile, "Stats", "statsFightingStyleSkillsEnabled")
+            IniWrite(0, configFile, "Stats", "statsMeleeSkillsEnabled")
             IniWrite(0, configFile, "Stats", "statsDefenceTimeWaited")
             IniWrite(0, configFile, "Stats", "statsSwordSkillsEnabled")
             IniWrite(0, configFile, "Stats", "statsFruitSkillsEnabled")
@@ -464,24 +463,24 @@ loadOptionsStats() {
             logMessage("config.ini has been created.")
         }
         logMessage("Reading config.ini")
-        FightingStyle := Number(IniRead(configFile, "Categories", "FightingStyle"))
+        Melee := Number(IniRead(configFile, "Categories", "Melee"))
         Defence := Number(IniRead(configFile, "Categories", "Defence"))
         Sword := Number(IniRead(configFile, "Categories", "Sword"))
         Fruit := Number(IniRead(configFile, "Categories", "Fruit"))
         Gun := Number(IniRead(configFile, "Categories", "Gun"))
-        FSkillZ := Number(IniRead(configFile, "FightingStyleSkills", "Z"))
-        FSkillX := Number(IniRead(configFile, "FightingStyleSkills", "X"))
-        FSkillC := Number(IniRead(configFile, "FightingStyleSkills", "C"))
-        FSkillV := Number(IniRead(configFile, "FightingStyleSkills", "V"))
-        FSkillB := Number(IniRead(configFile, "FightingStyleSkills", "B"))
-        FSkillF := Number(IniRead(configFile, "FightingStyleSkills", "F"))
+        MeleeSkillZ := Number(IniRead(configFile, "MeleeSkills", "Z"))
+        MeleeSkillX := Number(IniRead(configFile, "MeleeSkills", "X"))
+        MeleeSkillC := Number(IniRead(configFile, "MeleeSkills", "C"))
+        MeleeSkillV := Number(IniRead(configFile, "MeleeSkills", "V"))
+        MeleeSkillB := Number(IniRead(configFile, "MeleeSkills", "B"))
+        MeleeSkillF := Number(IniRead(configFile, "MeleeSkills", "F"))
         DefenceSleepTime := Number(IniRead(configFile, "Defence", "DefenceSleepTime"))
-        SSkillZ := Number(IniRead(configFile, "SwordSkills", "Z"))
-        SSkillX := Number(IniRead(configFile, "SwordSkills", "X"))
-        SSkillC := Number(IniRead(configFile, "SwordSkills", "C"))
-        SSkillV := Number(IniRead(configFile, "SwordSkills", "V"))
-        SSkillB := Number(IniRead(configFile, "SwordSkills", "B"))
-        SSkillF := Number(IniRead(configFile, "SwordSkills", "F"))
+        SwordSkillZ := Number(IniRead(configFile, "SwordSkills", "Z"))
+        SwordSkillX := Number(IniRead(configFile, "SwordSkills", "X"))
+        SwordSkillC := Number(IniRead(configFile, "SwordSkills", "C"))
+        SwordSkillV := Number(IniRead(configFile, "SwordSkills", "V"))
+        SwordSkillB := Number(IniRead(configFile, "SwordSkills", "B"))
+        SwordSkillF := Number(IniRead(configFile, "SwordSkills", "F"))
         FruitSkillZ := Number(IniRead(configFile, "FruitSkills", "Z"))
         FruitSkillX := Number(IniRead(configFile, "FruitSkills", "X"))
         FruitSkillC := Number(IniRead(configFile, "FruitSkills", "C"))
@@ -503,7 +502,7 @@ loadOptionsStats() {
         AZERTYLayout := Number(IniRead(configFile, "Others", "AZERTYLayout"))
         StatusBar := Number(IniRead(configFile, "Others", "StatusBar"))
         statsTimeRewardsClaimed := Number(IniRead(configFile, "Stats", "statsTimeRewardsClaimed"))
-        statsFightingStyleSkillsEnabled := Number(IniRead(configFile, "Stats", "statsFightingStyleSkillsEnabled"))
+        statsMeleeSkillsEnabled := Number(IniRead(configFile, "Stats", "statsMeleeSkillsEnabled"))
         statsDefenceTimeWaited := Number(IniRead(configFile, "Stats", "statsDefenceTimeWaited"))
         statsSwordSkillsEnabled := Number(IniRead(configFile, "Stats", "statsSwordSkillsEnabled"))
         statsFruitSkillsEnabled := Number(IniRead(configFile, "Stats", "statsFruitSkillsEnabled"))
@@ -511,6 +510,65 @@ loadOptionsStats() {
         statsTimeElapsed := Number(IniRead(configFile, "Stats", "statsTimeElapsed"))
         logMessage("Aplied options and stats from config.ini")
         return
+}
+
+ImportOptionsStats(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *) {
+    global
+    MsgBox("Note : this will not work with versions older that 2.1.0 as the way the inforations were saved has been changed in this version.", "Caution")
+    path := FileSelect(1, "", "Select a configuration file", "INI Files (*.ini)")
+    if !path {
+        return
+    }
+
+    Melee := Number(IniRead(path, "Categories", "Melee"))
+    Defence := Number(IniRead(path, "Categories", "Defence"))
+    Sword := Number(IniRead(path, "Categories", "Sword"))
+    Fruit := Number(IniRead(path, "Categories", "Fruit"))
+    Gun := Number(IniRead(path, "Categories", "Gun"))
+    MeleeSkillZ := Number(IniRead(path, "MeleeSkills", "Z"))
+    MeleeSkillX := Number(IniRead(path, "MeleeSkills", "X"))
+    MeleeSkillC := Number(IniRead(path, "MeleeSkills", "C"))
+    MeleeSkillV := Number(IniRead(path, "MeleeSkills", "V"))
+    MeleeSkillB := Number(IniRead(path, "MeleeSkills", "B"))
+    MeleeSkillF := Number(IniRead(path, "MeleeSkills", "F"))
+    DefenceSleepTime := Number(IniRead(path, "Defence", "DefenceSleepTime"))
+    SwordSkillZ := Number(IniRead(path, "SwordSkills", "Z"))
+    SwordSkillX := Number(IniRead(path, "SwordSkills", "X"))
+    SwordSkillC := Number(IniRead(path, "SwordSkills", "C"))
+    SwordSkillV := Number(IniRead(path, "SwordSkills", "V"))
+    SwordSkillB := Number(IniRead(path, "SwordSkills", "B"))
+    SwordSkillF := Number(IniRead(path, "SwordSkills", "F"))
+    FruitSkillZ := Number(IniRead(path, "FruitSkills", "Z"))
+    FruitSkillX := Number(IniRead(path, "FruitSkills", "X"))
+    FruitSkillC := Number(IniRead(path, "FruitSkills", "C"))
+    FruitSkillV := Number(IniRead(path, "FruitSkills", "V"))
+    FruitSkillB := Number(IniRead(path, "FruitSkills", "B"))
+    FruitSkillF := Number(IniRead(path, "FruitSkills", "F"))
+    GunSkillZ := Number(IniRead(path, "GunSkills", "Z"))
+    GunSkillX := Number(IniRead(path, "GunSkills", "X"))
+    GunSkillC := Number(IniRead(path, "GunSkills", "C"))
+    GunSkillV := Number(IniRead(path, "GunSkills", "V"))
+    GunSkillB := Number(IniRead(path, "GunSkills", "B"))
+    GunSkillF := Number(IniRead(path, "GunSkills", "F"))
+    AutoConquerorHaki := Number(IniRead(path, "AutoTasks", "AutoConquerorHaki"))
+    AutoClaimTimeRewards := Number(IniRead(path, "AutoTasks", "AutoClaimTimeRewards"))
+    CategoriesTimeInput := Number(IniRead(path, "Intervals", "CategoriesTimeInput"))
+    SkillTimeInput := Number(IniRead(path, "Intervals", "SkillTimeInput"))
+    TRDropFruit := Number(IniRead(path, "TRSettings", "TRDropFruit"))
+    TRCheckCount := Number(IniRead(path, "TRSettings", "TRCheckCount"))
+    AZERTYLayout := Number(IniRead(path, "Others", "AZERTYLayout"))
+    StatusBar := Number(IniRead(path, "Others", "StatusBar"))
+    statsTimeRewardsClaimed := Number(IniRead(path, "Stats", "statsTimeRewardsClaimed"))
+    statsMeleeSkillsEnabled := Number(IniRead(path, "Stats", "statsMeleeSkillsEnabled"))
+    statsDefenceTimeWaited := Number(IniRead(path, "Stats", "statsDefenceTimeWaited"))
+    statsSwordSkillsEnabled := Number(IniRead(path, "Stats", "statsSwordSkillsEnabled"))
+    statsFruitSkillsEnabled := Number(IniRead(path, "Stats", "statsFruitSkillsEnabled"))
+    statsGunSkillsEnabled := Number(IniRead(path, "Stats", "statsGunSkillsEnabled"))
+    statsTimeElapsed := Number(IniRead(path, "Stats", "statsTimeElapsed"))
+
+    saveOptionsStats()
+    updateGUI()
+    EnableStatusBar()
 }
 
 ; Boucle principale
@@ -524,7 +582,7 @@ mainLoopStart() {
         Sleep(100)
         if AutoClaimTimeRewards {
             ClaimTimeRewards()
-            LoopCount := Loopcount + 1
+            LoopCount += 1
         }
         updateStatus("Running")
         initializing := false
@@ -552,12 +610,12 @@ mainLoop() {
     global
     ; time rewards
     if AutoClaimTimeRewards {
-        Loopcount := Loopcount + 1
+        Loopcount += 1
         if (Loopcount = TRCheckCount) {
             ClaimTimeRewards()
             Sleep(2000)
             updateStatus("Running")
-            Loopcount := 1
+            Loopcount := 0
             Sleep(CategoriesTimeInput)
         }
     }
@@ -570,48 +628,48 @@ mainLoop() {
     }
 
     ; fithing style
-    if FightingStyle {
-        logMessage("[mainLoop] Started casting Fighting Style Skills", 1)
+    if Melee {
+        logMessage("[mainLoop] Started casting Melee Skills", 1)
         if AZERTYLayout {
             Send("{&}")
         } else {
             Send("{1}")
         }
-        Sleep(CategoriesTimeInput)
-        if (FSkillZ) {
+        if (MeleeSkillZ) {
             if AZERTYLayout {
                 Send("{w}")
             } else {
                 Send("{z}")
             }
-            statsFightingStyleSkillsEnabled += 1
+            statsMeleeSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        if (FSkillX) {
+        if (MeleeSkillX) {
             Send("{x}")
-            statsFightingStyleSkillsEnabled += 1
+            statsMeleeSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        if (FSkillC) {
+        if (MeleeSkillC) {
             Send("{c}")
-            statsFightingStyleSkillsEnabled += 1
+            statsMeleeSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        if (FSkillV) {
+        if (MeleeSkillV) {
             Send("{v}")
-            statsFightingStyleSkillsEnabled += 1
+            statsMeleeSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        if (FSkillB) {
+        if (MeleeSkillB) {
             Send("{b}")
-            statsFightingStyleSkillsEnabled += 1
+            statsMeleeSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        if (FSkillF) {
+        if (MeleeSkillF) {
             Send("{f}")
-            statsFightingStyleSkillsEnabled += 1
+            statsMeleeSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
+        Sleep(CategoriesTimeInput)
     }
     ; defense
     if Defence {
@@ -624,6 +682,7 @@ mainLoop() {
         ; MsgBox(DefenceSleepTime Type(DefenceSleepTime))
         Sleep(DefenceSleepTime * 1000) ; %DefenceSleepTime%
         statsDefenceTimeWaited += DefenceSleepTime
+        Sleep(CategoriesTimeInput)
     }
     ; sword
     if Sword {
@@ -633,41 +692,41 @@ mainLoop() {
         } else {
             Send("{3}")
         }
-        Sleep(CategoriesTimeInput)
-        if (SSkillZ) {
+        if (SwordSkillZ) {
             if AZERTYLayout {
                 Send("{w}")
             } else {
                 Send("{z}")
             }
             statsSwordSkillsEnabled += 1
-            Sleep(CategoriesTimeInput)
+            Sleep(SkillTimeInput)
         }
-        if (SSkillX) {
+        if (SwordSkillX) {
             Send("{x}")
             statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        if (SSkillC) {
+        if (SwordSkillC) {
             Send("{c}")
             statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        if (SSkillV) {
+        if (SwordSkillV) {
             Send("{v}")
             statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        if (SSkillB) {
+        if (SwordSkillB) {
             Send("{b}")
             statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
-        if (SSkillF) {
+        if (SwordSkillF) {
             Send("{f}")
             statsSwordSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
+        Sleep(CategoriesTimeInput)
     }
     ; fruit
     if Fruit {
@@ -677,7 +736,6 @@ mainLoop() {
         } else {
             Send("{4}")
         }
-        Sleep(CategoriesTimeInput)
         if (FruitSkillZ) {
             if AZERTYLayout {
                 Send("{w}")
@@ -712,6 +770,7 @@ mainLoop() {
             statsFruitSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
+        Sleep(CategoriesTimeInput)
     }
     ; gun
     if Gun {
@@ -721,7 +780,6 @@ mainLoop() {
         } else {
             Send("{5}")
         }
-        Sleep(CategoriesTimeInput)
         if (GunSkillZ) {
             if AZERTYLayout {
                 Send("{w}")
@@ -756,6 +814,7 @@ mainLoop() {
             statsGunSkillsEnabled += 1
             Sleep(SkillTimeInput)
         }
+        Sleep(CategoriesTimeInput)
     }
 }
 
@@ -783,9 +842,9 @@ ClaimTimeRewards() {
     ClickMouse(1160, 550) ; 10 - fruit
     ; ClickMouse(960, 700) ; bouton reset
     ClickMouse(1240, 300) ; fermer menu time rewards
-    ClickMouse(850, 845) ; Storage (fruit)
+    ClickMouse(850, 830) ; Storage (fruit)
     if TRDropFruit {
-        ClickMouse(1080, 845)  ; Drop (fruit)
+        ClickMouse(1080, 830)  ; Drop (fruit)
     }
     MouseMove(960, 280) ; Retour en haut de l'écran
     statsTimeRewardsClaimed += 1
@@ -801,7 +860,7 @@ updateStats(logging := 0) {
     logMessage("[updateStats] Started updating statistics.", 1)
     }
     ogcTextTimeRewardsClaimed.Value := "Time Rewards Claimed : " statsTimeRewardsClaimed
-    ogcTextFightingStyleSkillsEnabled.Value := "Fighting Style Skills Enabled : " statsFightingStyleSkillsEnabled
+    ogcTextMeleeSkillsEnabled.Value := "Melee Skills Enabled : " statsMeleeSkillsEnabled
     ogcTextDefenceTimeWaited.Value := "Defence Time Waited : " getTimerDisplay(statsDefenceTimeWaited)
     ogcTextSwordSkillsEnabled.Value := "Sword Skills Enabled : " statsSwordSkillsEnabled
     ogcTextFruitSkillsEnabled.Value := "Fruit Skills Enabled : " statsFruitSkillsEnabled
@@ -815,6 +874,50 @@ updateStats(logging := 0) {
     logMessage("[updateStats] Finished updating statistics.", 1)
     }
     return
+}
+
+updateGUI() {
+    updateStats()
+
+    ; Mises à jour des champs de type Edit
+    mainUI["Melee"].Value := Melee
+    mainUI["Defence"].Value := Defence
+    mainUI["Sword"].Value := Sword
+    mainUI["Fruit"].Value := Fruit
+    mainUI["Gun"].Value := Gun
+    mainUI["MeleeSkillZ"].Value := MeleeSkillZ
+    mainUI["MeleeSkillX"].Value := MeleeSkillX
+    mainUI["MeleeSkillC"].Value := MeleeSkillC
+    mainUI["MeleeSkillV"].Value := MeleeSkillV
+    mainUI["MeleeSkillB"].Value := MeleeSkillB
+    mainUI["MeleeSkillF"].Value := MeleeSkillF
+    mainUI["DefenceSleepTime"].Value := DefenceSleepTime
+    mainUI["SwordSkillZ"].Value := SwordSkillZ
+    mainUI["SwordSkillX"].Value := SwordSkillX
+    mainUI["SwordSkillC"].Value := SwordSkillC
+    mainUI["SwordSkillV"].Value := SwordSkillV
+    mainUI["SwordSkillB"].Value := SwordSkillB
+    mainUI["SwordSkillF"].Value := SwordSkillF
+    mainUI["FruitSkillZ"].Value := FruitSkillZ
+    mainUI["FruitSkillX"].Value := FruitSkillX
+    mainUI["FruitSkillC"].Value := FruitSkillC
+    mainUI["FruitSkillV"].Value := FruitSkillV
+    mainUI["FruitSkillB"].Value := FruitSkillB
+    mainUI["FruitSkillF"].Value := FruitSkillF
+    mainUI["GunSkillZ"].Value := GunSkillZ
+    mainUI["GunSkillX"].Value := GunSkillX
+    mainUI["GunSkillC"].Value := GunSkillC
+    mainUI["GunSkillV"].Value := GunSkillV
+    mainUI["GunSkillB"].Value := GunSkillB
+    mainUI["GunSkillF"].Value := GunSkillF
+    mainUI["CategoriesTimeInput"].Text := CategoriesTimeInput
+    mainUI["SkillTimeInput"].Text := SkillTimeInput
+    mainUI["TRDropFruit"].Value := TRDropFruit
+    mainUI["TRCheckCount"].Text := TRCheckCount
+    mainUI["AutoConquerorHaki"].Value := AutoConquerorHaki
+    mainUI["AutoClaimTimeRewards"].Value := AutoClaimTimeRewards
+    mainUI["AZERTYLayout"].Value := AZERTYLayout
+    mainUI["StatusBar"].Value := StatusBar
 }
 
 updateTimeElapsed() {
@@ -852,7 +955,7 @@ getTimerDisplay(t) {
 EnableStatusBar() {
     global
     oSaved := mainUI.Submit("0")
-    if statusBar { 
+    if oSaved.statusBar { 
         statusBarUI.Title := "Marco Status"
         statusBarUI.Show("w220 h25 x" (A_ScreenWidth-300) " y100")
     } else {
@@ -881,8 +984,7 @@ Return
 
 handlePause() {
     global running, paused
-    if running {
-        running := false
+    if !paused {
         paused := true
         SetTimer(updateStats,0)
         updateStats()
@@ -894,13 +996,9 @@ handlePause() {
         SetTimer(updateStats,5000)
         Sleep(100)
         updateStatus("Running")
-        running := true
         paused := false
-        ; Goto Restart
-        mainLoopStart()
     }
 }
-
 
 Stop() {
     global
@@ -951,7 +1049,7 @@ StopButton(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *)
 global
     Stop()
 Return
-} 
+}
 
 EnableStatusBarButton(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *)
 {
@@ -965,7 +1063,6 @@ EditScript(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *)
 global
     Edit()
 Return
-
 }
 
 ShowSettings(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *) {
