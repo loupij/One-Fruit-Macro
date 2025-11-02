@@ -10,11 +10,9 @@ CoordMode("Mouse", "Screen")
 
 ; do not modify
 global version := "2.1.0"
-; files
 global configFile := A_ScriptDir . "\config.ini"
 global logFile := A_ScriptDir . "\log.txt"
 global iconFile := A_ScriptDir . "\images\MacroIcon.ico"
-; variables
 global status := "Waiting"
 global initializing := true
 global running := false
@@ -40,7 +38,7 @@ global Defence, DefenceSleepTime
 global Sword, SwordSkillZ, SwordSkillX, SwordSkillC, SwordSkillV, SwordSkillB, SwordSkillF
 global Fruit, FruitSkillZ, FruitSkillX, FruitSkillC, FruitSkillV, FruitSkillB, FruitSkillF
 global Gun, GunSkillZ, GunSkillX, GunSkillC, GunSkillV, GunSkillB, GunSkillF
-global AutoConquerorHaki, AutoClaimTimeRewards
+global AutoConquerorHaki, AutoClaimTimeRewards, AutoV3
 global CategoriesTimeInput, SkillTimeInput
 global TRDropFruit, TRCheckCount
 global AZERTYLayout
@@ -140,7 +138,7 @@ createUI() {
 
     ; gui icon - from dolphsol's macro
     try {
-        TraySetIcon( iconFile)
+        TraySetIcon(iconFile)
     } catch Error as e {
         TraySetIcon("shell32.dll","3")
     }
@@ -219,98 +217,97 @@ createUI() {
     Tab.UseTab(2)
     logMessage("Creating second tab (Auto Tasks)", 1)
 
-    mainUI.Add("GroupBox", "x10 y30 w160 h180", "Automation")
-    logMessage("Creating Automation Groupbox (Auto Tasks)", 1)
-    ogcCheckboxAutoConquerorHaki := mainUI.Add("Checkbox", "x20 y50 vAutoConquerorHaki Checked" . AutoConquerorHaki, "Auto Conqueror Haki")
-    ogcCheckboxAutoClaimTimeRewards := mainUI.Add("Checkbox", "x20 y70 vAutoClaimTimeRewards  Checked" . AutoClaimTimeRewards, "Auto Claim Time Rewards")
-    ogcCheckboxAutoClaimTimeRewards.OnEvent("Click", TRWarning.Bind("Normal"))
+        mainUI.Add("GroupBox", "x10 y30 w160 h180", "Automation")
+        logMessage("Creating Automation Groupbox (Auto Tasks)", 1)
+        ogcCheckboxAutoConquerorHaki := mainUI.Add("Checkbox", "x20 y50 vAutoConquerorHaki Checked" . AutoConquerorHaki, "Auto Conqueror Haki")
+        ogcCheckboxAutoClaimTimeRewards := mainUI.Add("Checkbox", "x20 y70 vAutoClaimTimeRewards Checked" . AutoClaimTimeRewards, "Auto Claim Time Rewards")
+        ogcCheckboxAutoClaimTimeRewards.OnEvent("Click", TRWarning.Bind("Normal"))
+        ogcCheckboxAutoV3 := mainUI.Add("Checkbox", "x20 y90 vAutoV3 Checked" . AutoV3, "Auto V3")
 
     ; --- Onglet "Settings" ---
     Tab.UseTab(3)
     logMessage("Creating third tab (Settings)", 1)
 
-    ; intervalles
-    mainUI.Add("GroupBox", "x10 y30 w140 h180", "Intervals")
-    logMessage("Creating Intervals Groupbox (Settings)", 1)
-    mainUI.Add("Text", "x20 y50", "Categories change (ms):")
-    ogcCategoriesTimeInput := mainUI.Add("Edit", "x20 y70 vCategoriesTimeInput w100 Number", CategoriesTimeInput)
-    mainUI.Add("UpDown", "Range1-60000", CategoriesTimeInput)  ; Limite de 1 à 1000
-    mainUI.Add("Text", "x20 y90", "Skills cast (ms):")
-    ogcSkillTimeInput := mainUI.Add("Edit", "x20 y110 vSkillTimeInput w100 Number", SkillTimeInput)
-    mainUI.Add("UpDown", "Range1-60000", SkillTimeInput)  ; Limite de 1 à 1000
+        ; intervalles
+        mainUI.Add("GroupBox", "x10 y30 w140 h180", "Intervals")
+        logMessage("Creating Intervals Groupbox (Settings)", 1)
+        mainUI.Add("Text", "x20 y50", "Categories change (ms):")
+        ogcCategoriesTimeInput := mainUI.Add("Edit", "x20 y70 vCategoriesTimeInput w100 Number", CategoriesTimeInput)
+        mainUI.Add("UpDown", "Range1-60000", CategoriesTimeInput)  ; Limite de 1 à 1000
+        mainUI.Add("Text", "x20 y90", "Skills cast (ms):")
+        ogcSkillTimeInput := mainUI.Add("Edit", "x20 y110 vSkillTimeInput w100 Number", SkillTimeInput)
+        mainUI.Add("UpDown", "Range1-60000", SkillTimeInput)  ; Limite de 1 à 1000
 
-    ; time rewards
-    mainUI.Add("GroupBox", "x160 y30 w140 h180", "Time Rewards")
-    logMessage("Creating Time Rewards Groupbox (Settings)", 1)
-    ogcCheckBoxTRDropFruit := mainUI.Add("CheckBox", "vTRDropFruit x170 y50 Checked" . TRDropFruit, "Drop fruit")
-    mainUI.Add("Text", "x170 y70", "Claim TR every X loops")
-    ogcEditTRCheckCount := mainUI.Add("Edit", "x170 y90 vTRCheckCount w100 Number", TRCheckCount)
-    mainUI.Add("UpDown", "Range1-100", TRCheckCount)  ; Limite de 1 à 1000
+        ; time rewards
+        mainUI.Add("GroupBox", "x160 y30 w140 h180", "Time Rewards")
+        logMessage("Creating Time Rewards Groupbox (Settings)", 1)
+        ogcCheckBoxTRDropFruit := mainUI.Add("CheckBox", "vTRDropFruit x170 y50 Checked" . TRDropFruit, "Drop fruit")
+        mainUI.Add("Text", "x170 y70", "Claim TR every X loops")
+        ogcEditTRCheckCount := mainUI.Add("Edit", "x170 y90 vTRCheckCount w100 Number", TRCheckCount)
+        mainUI.Add("UpDown", "Range1-100", TRCheckCount)  ; Limite de 1 à 1000
 
-    ; Autres
-    mainUI.Add("GroupBox", "x310 y30 w140 h60", "Others")
-    logMessage("Creating Others Groupbox (Settings)", 1)
-    ogcCheckboxAZERTYLayout := mainUI.Add("Checkbox", "vAZERTYLayout x320 y50 Checked" . AZERTYLayout, "AZERTY Layout")
-    ogcCheckboxStatusBar := mainUI.Add("Checkbox", "vStatusBar  x320 y70 Checked" . StatusBar, "Enable Status Bar")
-    ogcCheckboxStatusBar.OnEvent("Click", EnableStatusBarButton.Bind("Normal"))
+        ; Autres
+        mainUI.Add("GroupBox", "x310 y30 w140 h60", "Others")
+        logMessage("Creating Others Groupbox (Settings)", 1)
+        ogcCheckboxAZERTYLayout := mainUI.Add("Checkbox", "vAZERTYLayout x320 y50 Checked" . AZERTYLayout, "AZERTY Layout")
+        ogcCheckboxStatusBar := mainUI.Add("Checkbox", "vStatusBar  x320 y70 Checked" . StatusBar, "Enable Status Bar")
+        ogcCheckboxStatusBar.OnEvent("Click", EnableStatusBarButton.Bind("Normal"))
 
-    mainUI.Add("GroupBox", "x310 y90 w140 h60", "Import")
-    logMessage("Creating Import Groupbox (Settings)", 1)
-    ogcButtonImportSettings := mainUI.Add("Button", "x320 y110 w120 h23", "Import Settings && Stats")
-    ogcButtonImportSettings.OnEvent("Click", ImportOptionsStats.Bind("Normal"))
+        mainUI.Add("GroupBox", "x310 y90 w140 h60", "Import")
+        logMessage("Creating Import Groupbox (Settings)", 1)
+        ogcButtonImportSettings := mainUI.Add("Button", "x320 y110 w120 h23", "Import Settings && Stats")
+        ogcButtonImportSettings.OnEvent("Click", ImportOptionsStats.Bind("Normal"))
 
 
-    ; DevMode
-    if devMode {
-        mainUI.Add("GroupBox", "x460 y30 w140 h180", "DevMode")
-        logMessage("Creating devMode groupbox (Settings)", 1)
-        ogcButtonClearLogs := mainUI.Add("Button", "x470 y50 w120 h23", "Clear Logs")
-        ogcButtonClearLogs.OnEvent("Click", ClearLog.Bind("Normal"))
-        ogcButtonOpenlogfile := mainUI.Add("Button", "x470 y75 w120 h23", "Open log file")
-        ogcButtonOpenlogfile.OnEvent("Click", OpenLogs.Bind("Normal"))
-        ogcButtonResetConfig := mainUI.Add("Button", "x470 y100 w120 h23", "Reset Config")
-        ogcButtonResetConfig.OnEvent("Click", ResetConfig.Bind("Normal"))
-        ogcButtonEditScript := mainUI.Add("Button", "x470 y125 w120 h23", "Edit Script")
-        ogcButtonEditScript.OnEvent("Click", EditScript.Bind("Normal"))
-        ogcButtonShowSettings := mainUI.Add("Button", "x470 y150 w120 h23", "Show Settings")
-        ogcButtonShowSettings.OnEvent("Click", ShowSettings.Bind("Normal"))
-    }
+        ; DevMode
+        if devMode {
+            mainUI.Add("GroupBox", "x460 y30 w140 h180", "DevMode")
+            logMessage("Creating devMode groupbox (Settings)", 1)
+            ogcButtonClearLogs := mainUI.Add("Button", "x470 y50 w120 h23", "Clear Logs")
+            ogcButtonClearLogs.OnEvent("Click", ClearLog.Bind("Normal"))
+            ogcButtonOpenlogfile := mainUI.Add("Button", "x470 y75 w120 h23", "Open log file")
+            ogcButtonOpenlogfile.OnEvent("Click", OpenLogs.Bind("Normal"))
+            ogcButtonResetConfig := mainUI.Add("Button", "x470 y100 w120 h23", "Reset Config")
+            ogcButtonResetConfig.OnEvent("Click", ResetConfig.Bind("Normal"))
+            ogcButtonEditScript := mainUI.Add("Button", "x470 y125 w120 h23", "Edit Script")
+            ogcButtonEditScript.OnEvent("Click", EditScript.Bind("Normal"))
+            ogcButtonShowSettings := mainUI.Add("Button", "x470 y150 w120 h23", "Show Settings")
+            ogcButtonShowSettings.OnEvent("Click", ShowSettings.Bind("Normal"))
+        }
 
     ; --- Onglet "Stats" ---
     Tab.UseTab(4)
     logMessage("Creating fourth tab (Stats)", 1)
 
-    mainUI.Add("GroupBox", "x10 y30 w590 h180")
-    ogcTextTimeRewardsClaimed := mainUI.Add("Text", "x20 y50 vTextTimeRewardsClaimedText", "Time Rewards Claimed : " . to_number(statsTimeRewardsClaimed))
-    ogcTextMeleeSkillsEnabled := mainUI.Add("Text", "x20 y70 vTextMeleeSkillsEnabled", "Melee Skills Enabled : " . to_number(statsMeleeSkillsEnabled))
-    ogcTextDefenceTimeWaited := mainUI.Add("Text", "x20 y90 vTextDefenseTimeWaited", "Defence Time Waited (ms) : " . getTimerDisplay(statsDefenceTimeWaited))
-    ogcTextSwordSkillsEnabled := mainUI.Add("Text", "x20 y110 vTextSwordSkillsEnabled", "Sword Skills Enabled : " . to_number(statsSwordSkillsEnabled))
-    ogcTextFruitSkillsEnabled := mainUI.Add("Text", "x20 y130 vTextFruitSkillsEnabled", "Fruit Skills Enabled : " . to_number(statsFruitSkillsEnabled))
-    ogcTextGunSkillsEnabled := mainUI.Add("Text", "x20 y150 vTextGunSkillsEnabled", "Gun Skills Enabled : " . to_number(statsGunSkillsEnabled))
-    ogcTextTimeElapsed := mainUI.Add("Text", "x20 y170 vTextTimeElapsed", "Time Elapsed : " . getTimerDisplay(statsTimeElapsed))
+        mainUI.Add("GroupBox", "x10 y30 w590 h180")
+        ogcTextTimeRewardsClaimed := mainUI.Add("Text", "x20 y50 vTextTimeRewardsClaimedText", "Time Rewards Claimed : " . to_number(statsTimeRewardsClaimed))
+        ogcTextMeleeSkillsEnabled := mainUI.Add("Text", "x20 y70 vTextMeleeSkillsEnabled", "Melee Skills Enabled : " . to_number(statsMeleeSkillsEnabled))
+        ogcTextDefenceTimeWaited := mainUI.Add("Text", "x20 y90 vTextDefenseTimeWaited", "Defence Time Waited (ms) : " . getTimerDisplay(statsDefenceTimeWaited))
+        ogcTextSwordSkillsEnabled := mainUI.Add("Text", "x20 y110 vTextSwordSkillsEnabled", "Sword Skills Enabled : " . to_number(statsSwordSkillsEnabled))
+        ogcTextFruitSkillsEnabled := mainUI.Add("Text", "x20 y130 vTextFruitSkillsEnabled", "Fruit Skills Enabled : " . to_number(statsFruitSkillsEnabled))
+        ogcTextGunSkillsEnabled := mainUI.Add("Text", "x20 y150 vTextGunSkillsEnabled", "Gun Skills Enabled : " . to_number(statsGunSkillsEnabled))
+        ogcTextTimeElapsed := mainUI.Add("Text", "x20 y170 vTextTimeElapsed", "Time Elapsed : " . getTimerDisplay(statsTimeElapsed))
 
     ; --- Onglet "Credits" ---
     Tab.UseTab(5)
     logMessage("Creating fifth tab (credits)", 1)
-    mainUI.Add("GroupBox", "x10 y30 w420 h90", "Credits")
-    mainUI.Add("Text", "x30 y50 w360", "This macro was created by me and tested by my friends.")
+        mainUI.Add("GroupBox", "x10 y30 w420 h90", "Credits")
+        mainUI.Add("Text", "x30 y50 w360", "This macro was created by me and tested by my friends.")
 
-    mainUI.Add("GroupBox", "x10 y120 w420 h90", "Inspiration")
-    mainUI.Add("Link", "x30 y150 w360", "This macro was inspired by <a href=`"https://github.com/BuilderDolphin/dolphSol-Macro`">DolphSol Sol's RNG Macro</a>.")
+        mainUI.Add("GroupBox", "x10 y120 w420 h90", "Inspiration")
+        mainUI.Add("Link", "x30 y150 w360", "This macro was inspired by <a href=`"https://github.com/BuilderDolphin/dolphSol-Macro`">DolphSol Sol's RNG Macro</a>.")
     
-
-
     Tab.UseTab()  ; Sort des onglets
     ; --- Boutons de validation et de contrôle ---
     logMessage("Creating Buttons", 1)
-    ogcButtonSave := mainUI.Add("Button", "x8 y230 w80 h23", "Save")
-    ogcButtonSave.OnEvent("Click", SaveButton.Bind("Normal"))
-    ogcButtonF1Start := mainUI.Add("Button", "x96 y230 w80 h23", "F1 - Start")
-    ogcButtonF1Start.OnEvent("Click", StartButton.Bind("Normal"))
-    ogcButtonF2Pause := mainUI.Add("Button", "x183 y230 w80 h23", "F2 - Pause")
-    ogcButtonF2Pause.OnEvent("Click", PauseButton.Bind("Normal"))
-    ogcButtonF3Stop := mainUI.Add("Button", "x270 y230 w80 h23", "F3 - Stop")
-    ogcButtonF3Stop.OnEvent("Click", StopButton.Bind("Normal"))
+        ogcButtonSave := mainUI.Add("Button", "x8 y230 w80 h23", "Save")
+        ogcButtonSave.OnEvent("Click", SaveButton.Bind("Normal"))
+        ogcButtonF1Start := mainUI.Add("Button", "x96 y230 w80 h23", "F1 - Start")
+        ogcButtonF1Start.OnEvent("Click", StartButton.Bind("Normal"))
+        ogcButtonF2Pause := mainUI.Add("Button", "x183 y230 w80 h23", "F2 - Pause")
+        ogcButtonF2Pause.OnEvent("Click", PauseButton.Bind("Normal"))
+        ogcButtonF3Stop := mainUI.Add("Button", "x270 y230 w80 h23", "F3 - Stop")
+        ogcButtonF3Stop.OnEvent("Click", StopButton.Bind("Normal"))
 
     ; autres
     mainUI.Title := "loupij's One Fruit Macro " . version
@@ -382,6 +379,7 @@ saveOptionsStats(fromSaveButton := 0) {
     IniWrite(Number(Osaved.GunSkillF), configFile, "GunSkills", "F")
     IniWrite(Number(Osaved.AutoConquerorHaki), configFile, "AutoTasks", "AutoConquerorHaki")
     IniWrite(Number(Osaved.AutoClaimTimeRewards), configFile, "AutoTasks", "AutoClaimTimeRewards")
+    IniWrite(Number(Osaved.AutoV3), configFile, "AutoTasks", "AutoV3")
     IniWrite(to_number(Osaved.CategoriesTimeInput), configFile, "Intervals", "CategoriesTimeInput")
     IniWrite(to_number(Osaved.SkillTimeInput), configFile, "Intervals", "SkillTimeInput")
     IniWrite(Number(Osaved.TRDropFruit), configFile, "TRSettings", "TRDropFruit")
@@ -447,6 +445,7 @@ loadOptionsStats() {
             IniWrite(0, configFile, "GunSkills", "F")
             IniWrite(1, configFile, "AutoTasks", "AutoConquerorHaki")
             IniWrite(0, configFile, "AutoTasks", "AutoClaimTimeRewards")
+            IniWrite(1, configFile, "AutoTasks", "AutoV3")
             IniWrite(250, configFile, "Intervals", "CategoriesTimeInput") ; valeur par défaut de l'intervalle = 500
             IniWrite(500, configFile, "Intervals", "SkillTimeInput") ; valeur par défaut de l'invervalle = 1000
             IniWrite(0, configFile, "TRSettings", "TRDropFruit")
@@ -495,6 +494,7 @@ loadOptionsStats() {
         GunSkillF := Number(IniRead(configFile, "GunSkills", "F"))
         AutoConquerorHaki := Number(IniRead(configFile, "AutoTasks", "AutoConquerorHaki"))
         AutoClaimTimeRewards := Number(IniRead(configFile, "AutoTasks", "AutoClaimTimeRewards"))
+        AutoV3 := Number(IniRead(configFile, "AutoTasks", "AutoV3"))
         CategoriesTimeInput := Number(IniRead(configFile, "Intervals", "CategoriesTimeInput"))
         SkillTimeInput := Number(IniRead(configFile, "Intervals", "SkillTimeInput"))
         TRDropFruit := Number(IniRead(configFile, "TRSettings", "TRDropFruit"))
@@ -514,7 +514,7 @@ loadOptionsStats() {
 
 ImportOptionsStats(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *) {
     global
-    MsgBox("Note : this will not work with versions older that 2.1.0 as the way the inforations were saved has been changed in this version.", "Caution")
+    MsgBox("Note : this will not work with versions older that 2.2.0 as the way the inforations were saved has been changed in this version.", "Caution")
     path := FileSelect(1, "", "Select a configuration file", "INI Files (*.ini)")
     if !path {
         return
@@ -552,6 +552,7 @@ ImportOptionsStats(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *) {
     GunSkillF := Number(IniRead(path, "GunSkills", "F"))
     AutoConquerorHaki := Number(IniRead(path, "AutoTasks", "AutoConquerorHaki"))
     AutoClaimTimeRewards := Number(IniRead(path, "AutoTasks", "AutoClaimTimeRewards"))
+    AutoV3 := Number(IniRead(path, "AutoTasks", "AutoV3"))
     CategoriesTimeInput := Number(IniRead(path, "Intervals", "CategoriesTimeInput"))
     SkillTimeInput := Number(IniRead(path, "Intervals", "SkillTimeInput"))
     TRDropFruit := Number(IniRead(path, "TRSettings", "TRDropFruit"))
@@ -596,6 +597,7 @@ mainLoopStart() {
         if paused {
             continue
         }
+
         try {
             mainLoop()
         } catch Error as e  {
@@ -624,6 +626,19 @@ mainLoop() {
     if AutoConquerorHaki {
         logMessage("[mainLoop] Enabled Conqueror Haki", 1)
         Send("{h}")
+        Sleep(CategoriesTimeInput)
+    }
+
+    ; v3
+    if AutoV3 {
+        logMessage("[mainLoop] Enabling V3", 1)
+        if AZERTYLayout {
+            Send("{_}")
+            Send("{w}")
+        } else {
+            Send("{8}")
+            Send("{z}")
+        }
         Sleep(CategoriesTimeInput)
     }
 
@@ -916,6 +931,7 @@ updateGUI() {
     mainUI["TRCheckCount"].Text := TRCheckCount
     mainUI["AutoConquerorHaki"].Value := AutoConquerorHaki
     mainUI["AutoClaimTimeRewards"].Value := AutoClaimTimeRewards
+    mainUI["AutoV3"].Value := AutoV3
     mainUI["AZERTYLayout"].Value := AZERTYLayout
     mainUI["StatusBar"].Value := StatusBar
 }
