@@ -9,7 +9,7 @@ CoordMode("Mouse", "Screen")
 ; #Include fonctions.ahk
 
 ; do not modify
-global version := "2.1.0"
+global version := "2.2.0"
 global configFile := A_ScriptDir . "\config.ini"
 global logFile := A_ScriptDir . "\log.txt"
 global iconFile := A_ScriptDir . "\images\MacroIcon.ico"
@@ -1086,3 +1086,4 @@ ShowSettings(A_GuiEvent := "", GuiCtrlObj := "", Info := "", *) {
     ListHotkeys()
     return
 }
+
