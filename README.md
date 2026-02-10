@@ -2,7 +2,7 @@
 A macro for the roblox game One Fruit
 
 # Features
-- Auto cast skills for fighting styles, swords and gun
+- Auto cast skills for fighting styles, fruits, swords and gun
 - A defence sleeping time so that you can train your defence
 - Auto enable conqueror's haki and V3 ability
 - Auto claim time rewards
